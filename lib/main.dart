@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:leafy_mobile_app/providers/authprovider.dart';
 import 'package:leafy_mobile_app/providers/products_provider.dart';
@@ -8,7 +10,17 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
+  HttpOverrides.global = MyHttpOverrides();
   runApp(const MyApp());
+}
+
+class MyHttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(SecurityContext? context) {
+    return super.createHttpClient(context)
+      ..badCertificateCallback =
+          (X509Certificate cert, String host, int port) => true;
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -31,7 +43,7 @@ class MyApp extends StatelessWidget {
           ),
           useMaterial3: false,
         ),
-        home: const LandingScreen(),
+        home: const HomeScreen(),
       ),
     );
   }
@@ -71,6 +83,6 @@ class _ScreenRouterState extends State<ScreenRouter> {
 
   @override
   Widget build(BuildContext context) {
-    return haveToken ? const HomeScreen() : const LoginScreen();
+    return haveToken ? const HomeScreen() : const HomeScreen();
   }
 }

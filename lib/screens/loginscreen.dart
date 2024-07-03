@@ -50,7 +50,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         style:
                             const TextStyle(color: Colors.white), // Text color
                         decoration: InputDecoration(
-                          hintText: "Phone",
+                          hintText: "Email",
                           hintStyle: const TextStyle(color: Colors.white),
                           enabledBorder: OutlineInputBorder(
                             borderSide: const BorderSide(color: Colors.white),
@@ -133,7 +133,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           const Text("Don't have an account?",
                               style: TextStyle(color: Colors.white)),
                           TextButton(
-                            child: const Text("Create Account"),
+                            child: const Text("Create Account",
+                                style: TextStyle(color: Colors.white)),
                             onPressed: () {
                               Navigator.push(
                                 context,
@@ -147,25 +148,63 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 20),
                       ElevatedButton(
-                        onPressed: () {
-                          Provider.of<AuthProvider>(context, listen: false)
-                              .login({
-                            "email": emailController.text,
-                            "password": passwordController.text
-                          }, context).then((loggedIn) {
-                            if (loggedIn) {
-                              Navigator.pushAndRemoveUntil(
-                                context,
-                                CupertinoPageRoute(
-                                  builder: (context) => const ScreenRouter(),
-                                ),
-                                (route) => false,
-                              );
-                            }
-                          });
-                        },
-                        child: const Text("LOGIN"),
-                      ),
+                          onPressed: () {
+                            Provider.of<AuthProvider>(context, listen: false)
+                                .login({
+                              "email": emailController.text,
+                              "password": passwordController.text
+                            }, context).then((loggedIn) {
+                              if (loggedIn) {
+                                // Show success dialog
+                                showDialog(
+                                  context: context,
+                                  barrierDismissible:
+                                      false, // Prevent dialog from being dismissed by tapping outside
+                                  builder: (BuildContext context) {
+                                    Future.delayed(const Duration(seconds: 2),
+                                        () {
+                                      Navigator.of(context)
+                                          .pop(); // Close dialog after 2 seconds
+                                      Navigator.pushAndRemoveUntil(
+                                        context,
+                                        CupertinoPageRoute(
+                                          builder: (context) =>
+                                              const ScreenRouter(),
+                                        ),
+                                        (route) => false,
+                                      );
+                                    });
+                                    return AlertDialog(
+                                      backgroundColor: Colors
+                                          .white, // Background color of the dialog
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(16.0)),
+                                      title: const Icon(
+                                        Icons.save,
+                                        color: Colors.green,
+                                      ),
+                                      content: const Text(
+                                        "Login successful",
+                                        style: TextStyle(
+                                          color: Colors
+                                              .black, // Content text color
+                                          fontSize: 18.0, // Content font size
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                );
+                              }
+                            });
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor:
+                                const Color.fromARGB(89, 149, 180, 158),
+                            minimumSize: const Size(114, 40),
+                          ),
+                          child: const Text('Login',
+                              style: TextStyle(color: Colors.white)))
                     ],
                   ),
                 ),

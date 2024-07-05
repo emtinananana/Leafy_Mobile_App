@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:leafy_mobile_app/main.dart';
+import 'package:leafy_mobile_app/screens/cartscreen.dart';
 import 'package:provider/provider.dart';
 import 'package:leafy_mobile_app/models/products_model.dart';
 import 'package:leafy_mobile_app/providers/authprovider.dart';
@@ -101,7 +102,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   controller: searchController,
                   decoration: InputDecoration(
                     hintText: 'Search for products...',
-                    prefixIcon: Icon(Icons.search),
+                    prefixIcon: const Icon(Icons.search),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                       borderSide: BorderSide.none,
@@ -139,7 +140,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         );
                       }).toList(),
                       IconButton(
-                        icon: Icon(Icons.filter_list, color: Colors.green),
+                        icon:
+                            const Icon(Icons.filter_list, color: Colors.green),
                         onPressed: () {
                           selectedProductType = 'All';
                           _showTagFilterDialog(productsConsumer);
@@ -149,7 +151,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               ),
-              SizedBox(height: 16.0),
+              const SizedBox(height: 16.0),
               Divider(
                 color: Colors.green.withOpacity(0.2),
                 height: 0,
@@ -202,7 +204,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
           bottomNavigationBar: BottomAppBar(
-            shape: CircularNotchedRectangle(),
+            shape: const CircularNotchedRectangle(),
             notchMargin: 4.0,
             child: Row(
               mainAxisSize: MainAxisSize.max,
@@ -212,7 +214,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   icon: Icon(Icons.shopping_cart,
                       color: Colors.green.withOpacity(0.86)),
                   onPressed: () {
-                    // Navigate to cart
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => CartScreen()),
+                    );
                   },
                 ),
                 IconButton(
@@ -298,7 +303,7 @@ class _HomeScreenState extends State<HomeScreen> {
         return StatefulBuilder(
           builder: (BuildContext context, setState) {
             return AlertDialog(
-              title: Text('Filter by Tags'),
+              title: const Text('Filter by Tags'),
               content: SingleChildScrollView(
                 child: Consumer<ProductsProvider>(
                   builder: (context, productsProvider, _) {
@@ -332,14 +337,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   onPressed: () {
                     Navigator.of(context).pop(); // Cancel dialog
                   },
-                  child: Text('Cancel'),
+                  child: const Text('Cancel'),
                 ),
                 TextButton(
                   onPressed: () {
                     Navigator.of(context).pop(); // Apply and close dialog
                     productsConsumer.filterProductsByTags(selectedTags);
                   },
-                  child: Text('Apply'),
+                  child: const Text('Apply'),
                 ),
               ],
             );

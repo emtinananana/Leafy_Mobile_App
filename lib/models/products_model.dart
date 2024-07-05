@@ -11,6 +11,8 @@ class ProductModel {
   final String firstImage;
   final List<ProductImage> images;
   final List<Tag> tags;
+  final List<PlantInstruction>?
+      plantInstructions; // Optional field for plant instructions
 
   ProductModel({
     required this.id,
@@ -25,6 +27,7 @@ class ProductModel {
     required this.firstImage,
     required this.images,
     required this.tags,
+    this.plantInstructions, // Optional parameter
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
@@ -45,6 +48,11 @@ class ProductModel {
             .toList(),
         tags:
             (json['tags'] as List? ?? []).map((t) => Tag.fromJson(t)).toList(),
+        plantInstructions: json['product_type'] == 'Plant'
+            ? (json['plant_instruction'] as List? ?? [])
+                .map((pi) => PlantInstruction.fromJson(pi))
+                .toList()
+            : null, // Conditional parsing based on product type
       );
     } catch (e) {
       print('Error parsing JSON for ProductModel: $e');
@@ -102,6 +110,37 @@ class Tag {
     } catch (e) {
       print('Error parsing JSON for Tag: $e');
       throw Exception('Failed to parse tag data');
+    }
+  }
+}
+
+class PlantInstruction {
+  final int id;
+  final int productId;
+  final String instruction;
+  final String createdAt;
+  final String updatedAt;
+
+  PlantInstruction({
+    required this.id,
+    required this.productId,
+    required this.instruction,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+
+  factory PlantInstruction.fromJson(Map<String, dynamic> json) {
+    try {
+      return PlantInstruction(
+        id: json['id'] ?? 0,
+        productId: json['product_id'] ?? 0,
+        instruction: json['instruction'] ?? '',
+        createdAt: json['created_at'] ?? '',
+        updatedAt: json['updated_at'] ?? '',
+      );
+    } catch (e) {
+      print('Error parsing JSON for PlantInstruction: $e');
+      throw Exception('Failed to parse plant instruction data');
     }
   }
 }

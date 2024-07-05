@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:leafy_mobile_app/main.dart';
 import 'package:leafy_mobile_app/screens/cartscreen.dart';
+import 'package:leafy_mobile_app/screens/favscreen.dart';
+import 'package:leafy_mobile_app/screens/historyscreen.dart';
+import 'package:leafy_mobile_app/screens/profilescreen.dart';
 import 'package:provider/provider.dart';
 import 'package:leafy_mobile_app/models/products_model.dart';
 import 'package:leafy_mobile_app/providers/authprovider.dart';
@@ -224,14 +227,20 @@ class _HomeScreenState extends State<HomeScreen> {
                   icon: Icon(Icons.history,
                       color: Colors.green.withOpacity(0.86)),
                   onPressed: () {
-                    // Navigate to history
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => HistoryScreen()),
+                    );
                   },
                 ),
                 IconButton(
                   icon: Icon(Icons.favorite,
                       color: Colors.green.withOpacity(0.86)),
                   onPressed: () {
-                    // Navigate to favorites
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => FavScreen()),
+                    );
                   },
                 ),
                 IconButton(
@@ -247,8 +256,21 @@ class _HomeScreenState extends State<HomeScreen> {
           drawer: Drawer(
             child: SafeArea(
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment
+                    .start, // Changed to start to avoid items being pushed to the end
                 children: [
+                  ListTile(
+                    title: const Text("Profile"),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ProfileScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  const Divider(),
                   const ListTile(
                     title: Text("Contact Us"),
                   ),
@@ -303,7 +325,13 @@ class _HomeScreenState extends State<HomeScreen> {
         return StatefulBuilder(
           builder: (BuildContext context, setState) {
             return AlertDialog(
-              title: const Text('Filter by Tags'),
+              title: Text(
+                'Filter by Tags',
+                style: GoogleFonts.oswald(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               content: SingleChildScrollView(
                 child: Consumer<ProductsProvider>(
                   builder: (context, productsProvider, _) {
@@ -314,6 +342,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         return CheckboxListTile(
                           title: Text(tag),
                           value: selectedTags.contains(tag),
+                          activeColor: Color.fromARGB(221, 44, 163, 58),
                           onChanged: (bool? value) {
                             setState(() {
                               if (value != null) {
@@ -337,14 +366,18 @@ class _HomeScreenState extends State<HomeScreen> {
                   onPressed: () {
                     Navigator.of(context).pop(); // Cancel dialog
                   },
-                  child: const Text('Cancel'),
+                  child: const Text('Cancel',
+                      style:
+                          TextStyle(color: Color.fromARGB(221, 44, 163, 58))),
                 ),
                 TextButton(
                   onPressed: () {
                     Navigator.of(context).pop(); // Apply and close dialog
                     productsConsumer.filterProductsByTags(selectedTags);
                   },
-                  child: const Text('Apply'),
+                  child: const Text('Apply',
+                      style:
+                          TextStyle(color: Color.fromARGB(221, 44, 163, 58))),
                 ),
               ],
             );

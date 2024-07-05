@@ -4,12 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:leafy_mobile_app/models/products_model.dart';
+import 'package:leafy_mobile_app/providers/products_provider.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ProductDetailsScreen extends StatefulWidget {
   final ProductModel product;
 
-  const ProductDetailsScreen({super.key, required this.product});
+  const ProductDetailsScreen({Key? key, required this.product})
+      : super(key: key);
 
   @override
   _ProductDetailsScreenState createState() => _ProductDetailsScreenState();
@@ -23,9 +26,14 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final productsProvider = Provider.of<ProductsProvider>(context);
+
+    // Check if the product is liked
+    bool isLiked = productsProvider.likedProductIds.contains(widget.product.id);
+
     return Scaffold(
       appBar: AppBar(
-        iconTheme: const IconThemeData(color: Colors.black87),
+        iconTheme: IconThemeData(color: Colors.black87),
         elevation: 0,
         centerTitle: true,
         backgroundColor: Colors.white,
@@ -33,13 +41,13 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
           'L E A F Y',
           style: GoogleFonts.oswald(
             fontSize: 24,
-            color: const Color.fromARGB(221, 44, 163, 58),
+            color: Color.fromARGB(221, 44, 163, 58),
             fontWeight: FontWeight.bold,
           ),
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+        padding: EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -53,7 +61,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                 fit: BoxFit.contain,
               ),
             ),
-            const SizedBox(height: 16.0),
+            SizedBox(height: 16.0),
             // Thumbnails
             SizedBox(
               height: 70,
@@ -68,7 +76,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                       });
                     },
                     child: Container(
-                      margin: const EdgeInsets.only(right: 8.0),
+                      margin: EdgeInsets.only(right: 8.0),
                       decoration: BoxDecoration(
                         border: Border.all(
                           color: _selectedImageIndex == index
@@ -92,16 +100,38 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                 },
               ),
             ),
-            const SizedBox(height: 16.0),
-            Text(
-              widget.product.name,
-              style: GoogleFonts.oswald(
-                fontSize: 24,
-                color: Colors.black87,
-                fontWeight: FontWeight.bold,
-              ),
+            SizedBox(height: 16.0),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  widget.product.name,
+                  style: GoogleFonts.oswald(
+                    fontSize: 24,
+                    color: Colors.black87,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(
+                    isLiked ? Icons.favorite : Icons.favorite_border,
+                    color: isLiked ? Colors.red : Colors.grey,
+                    size: 30,
+                  ),
+                  onPressed: () async {
+                    await productsProvider.toggleLike(widget.product.id);
+                    setState(() {});
+                    final message = isLiked
+                        ? 'Product unliked successfully!'
+                        : 'Product liked successfully!';
+                    final snackBar = SnackBar(content: Text(message));
+                    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                  },
+                ),
+              ],
             ),
-            const SizedBox(height: 8.0),
+
+            SizedBox(height: 8.0),
             Text(
               '\$${widget.product.price}',
               style: GoogleFonts.roboto(
@@ -110,55 +140,72 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 16.0),
-            Text(
-              'Product Type: ${widget.product.productType}',
-              style: const TextStyle(fontSize: 16, color: Colors.black54),
+            SizedBox(height: 16.0),
+            Row(
+              children: [
+                Text('Product Type  ',
+                    style:
+                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                Text(
+                  widget.product.productType,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.black54,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 8.0),
-            Text(
-              'Tags: ${widget.product.tags.map((tag) => tag.name).join(', ')}',
-              style: const TextStyle(fontSize: 16, color: Colors.black54),
+
+            SizedBox(height: 16.0),
+            Row(
+              children: [
+                Text('Tags   ',
+                    style:
+                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                Text(
+                  widget.product.tags.map((tag) => tag.name).join(', '),
+                  style: TextStyle(fontSize: 16, color: Colors.black54),
+                ),
+              ],
             ),
-            const SizedBox(height: 16.0),
-            const Text(
-              'Description:',
+            SizedBox(height: 16.0),
+            Text(
+              'Description ',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 4.0),
+            SizedBox(height: 16.0),
             Text(
               widget.product.description,
-              style: const TextStyle(fontSize: 16, color: Colors.black54),
+              style: TextStyle(fontSize: 16, color: Colors.black54),
             ),
             if (widget.product.plantInstructions != null) ...[
-              const SizedBox(height: 16.0),
-              const Text(
-                'Plant Instructions:',
+              SizedBox(height: 16.0),
+              Text(
+                'Plant Instructions ',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               ...widget.product.plantInstructions!.map((instruction) => Padding(
                     padding: const EdgeInsets.only(top: 4.0),
                     child: Text(
                       instruction.instruction,
-                      style:
-                          const TextStyle(fontSize: 16, color: Colors.black54),
+                      style: TextStyle(fontSize: 16, color: Colors.black54),
                     ),
                   )),
             ],
-            const SizedBox(height: 16.0),
+            SizedBox(height: 16.0),
             if (widget.product.quantity <= 1)
-              const Center(
+              Center(
                 child: Text(
                   'Out of Stock',
                   style: TextStyle(fontSize: 18, color: Colors.red),
                 ),
               ),
-            const SizedBox(height: 16.0),
+            SizedBox(height: 16.0),
           ],
         ),
       ),
       bottomNavigationBar: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: EdgeInsets.all(16.0),
         child: ElevatedButton(
           onPressed: widget.product.quantity > 1
               ? () {
@@ -166,19 +213,14 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                 }
               : null,
           style: ElevatedButton.styleFrom(
-            foregroundColor: Colors.white,
+            foregroundColor:
+                widget.product.quantity > 1 ? Colors.white : Colors.black38,
             backgroundColor:
                 widget.product.quantity > 1 ? Colors.green : Colors.grey,
-            padding: const EdgeInsets.symmetric(vertical: 16.0),
-            textStyle: const TextStyle(fontSize: 18),
+            padding: EdgeInsets.symmetric(vertical: 16.0),
+            textStyle: TextStyle(fontSize: 18),
           ),
-          child: Text(
-            'Add to Cart',
-            style: TextStyle(
-              color:
-                  widget.product.quantity > 1 ? Colors.white : Colors.black38,
-            ),
-          ),
+          child: Text('Add to Cart'),
         ),
       ),
     );
@@ -191,19 +233,21 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              title: Text('Add to Cart',
-                  style: GoogleFonts.oswald(
-                    fontSize: 24,
-                    color: const Color.fromARGB(221, 44, 163, 58),
-                    fontWeight: FontWeight.bold,
-                  )),
+              title: Text(
+                'Add to Cart',
+                style: GoogleFonts.oswald(
+                  fontSize: 24,
+                  color: Color.fromARGB(221, 44, 163, 58),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               content: SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
-                        const Text('Quantity'),
+                        Text('Quantity'),
                         SizedBox(width: 130),
                         DropdownButton<int>(
                           value: _quantity,
@@ -225,7 +269,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('Is this a gift?'),
+                        Text('Is this a gift?'),
                         Checkbox(
                           value: _isGift,
                           onChanged: (value) {
@@ -236,24 +280,25 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                         ),
                       ],
                     ),
-                    SizedBox(height: 30),
                     if (widget.product.productType == 'Plant')
-                      Row(
+                      Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Pot Type'),
-                          SizedBox(width: 80),
+                          SizedBox(height: 10),
+                          Text('Select pot type:'),
+                          SizedBox(height: 8.0),
                           DropdownButton<String>(
                             value: _selectedPotType,
+                            hint: Text('Select pot type'),
                             items: ['Plastic', 'Ceramic', 'Glass']
-                                .map((e) => DropdownMenuItem(
-                                      value: e,
-                                      child: Text(e),
+                                .map((type) => DropdownMenuItem(
+                                      value: type,
+                                      child: Text(type),
                                     ))
                                 .toList(),
                             onChanged: (value) {
                               setState(() {
-                                _selectedPotType = value!;
+                                _selectedPotType = value;
                               });
                             },
                           ),
@@ -265,22 +310,22 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
               actions: [
                 TextButton(
                   onPressed: () {
-                    Navigator.of(context).pop();
+                    Navigator.pop(context);
                   },
-                  child: const Text(
-                    'Cancel',
-                    style: TextStyle(color: Color.fromARGB(221, 44, 163, 58)),
-                  ),
+                  child: Text('Cancel'),
                 ),
-                TextButton(
+                ElevatedButton(
                   onPressed: () async {
                     await _addToCart();
-                    Navigator.of(context).pop();
+                    Navigator.pop(context);
                   },
-                  child: const Text(
-                    'Add to Cart',
-                    style: TextStyle(color: Color.fromARGB(221, 44, 163, 58)),
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    backgroundColor: Color.fromARGB(221, 44, 163, 58),
+                    padding: EdgeInsets.symmetric(vertical: 8.0),
+                    textStyle: TextStyle(fontSize: 18),
                   ),
+                  child: Text('Add'),
                 ),
               ],
             );
@@ -293,29 +338,34 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   Future<void> _addToCart() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString("token");
+    String? potType = _selectedPotType;
 
-    final response = await http.post(
-      Uri.parse(
-          "http://127.0.0.1:8000/api/customer/cart/add/${widget.product.id}"),
+    if (token == null) {
+      // Handle case where user is not logged in
+      return;
+    }
+
+    var url = Uri.parse(
+        'http://127.0.0.1:8000/api/customer/cart/add/${widget.product.id}');
+    var body = json.encode({
+      'quantity': _quantity,
+      'is_gift': _isGift,
+      'pot_type': widget.product.productType == 'Plant' ? potType : null,
+    });
+
+    var response = await http.post(
+      url,
       headers: {
-        'Content-Type': 'application/json; charset=UTF-8',
+        'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
       },
-      body: jsonEncode({
-        'quantity': _quantity,
-        'is_gift': _isGift,
-        if (_selectedPotType != null) 'pot_type': _selectedPotType,
-      }),
+      body: body,
     );
 
-    if (response.statusCode == 200 || response.statusCode == 201) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Added to cart successfully")),
-      );
+    if (response.statusCode == 200) {
+      // Handle success
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Failed to add to cart")),
-      );
+      // Handle error
     }
   }
 }

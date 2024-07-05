@@ -1,12 +1,12 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
 class AuthProvider with ChangeNotifier {
+  late User _user = User(id: 0, name: '', email: '', phone: '', address: '');
+  User get user => _user;
+
   Future<bool> login(Map loginBody, BuildContext context) async {
     bool isLoggedIn = false;
 
@@ -27,6 +27,16 @@ class AuthProvider with ChangeNotifier {
       try {
         final responseBody = json.decode(response.body);
         isLoggedIn = true;
+        _user = User(
+          id: responseBody['user']['id'],
+          name: responseBody['user']['name'],
+          email: responseBody['user']['email'],
+          avatar: responseBody['user']['avatar'],
+          phone: responseBody['user']['phone'],
+          address: responseBody['user']['address'],
+          createdAt: DateTime.parse(responseBody['user']['created_at']),
+          updatedAt: DateTime.parse(responseBody['user']['updated_at']),
+        );
         SharedPreferences prefs = await SharedPreferences.getInstance();
         prefs.setString("token", responseBody['token']);
 
@@ -98,7 +108,73 @@ class AuthProvider with ChangeNotifier {
 
   Future<bool> logout() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
+
     prefs.remove('token');
+    _user = User(id: 0, name: '', email: '', phone: '', address: '');
     return true;
+  }
+
+  void updateAvatar(String avatarUrl) {
+    _user = User(
+      id: _user.id,
+      name: _user.name,
+      email: _user.email,
+      avatar: avatarUrl,
+      phone: _user.phone,
+      address: _user.address,
+      createdAt: _user.createdAt,
+      updatedAt: DateTime.now(),
+    );
+    notifyListeners();
+  }
+
+  void updateUserProfile(
+      String name, String email, String phone, String address) {
+    _user = User(
+      id: _user.id,
+      name: name,
+      email: email,
+      avatar: _user.avatar,
+      phone: phone,
+      address: address,
+      createdAt: _user.createdAt,
+      updatedAt: DateTime.now(),
+    );
+    notifyListeners();
+  }
+}
+
+class User {
+  final int id;
+  final String name;
+  final String email;
+  final String? avatar;
+  final String phone;
+  final String address;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+
+  User({
+    required this.id,
+    required this.name,
+    required this.email,
+    this.avatar,
+    required this.phone,
+    required this.address,
+    this.createdAt,
+    this.updatedAt,
+  });
+
+  factory User.fromJson(Map<String, dynamic> json) {
+    return User(
+      id: json['id'],
+      name: json['name'],
+      email: json['email'],
+      avatar: json['avatar'],
+      phone: json['phone'],
+      address: json['address'],
+      createdAt: DateTime.parse(json['created_at']),
+      updatedAt: DateTime.parse(json['updated_at']),
+    );
   }
 }

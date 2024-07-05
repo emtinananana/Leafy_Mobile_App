@@ -97,6 +97,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             icon: Icon(hidePassword
                                 ? Icons.visibility
                                 : Icons.visibility_off),
+                            color: Colors.white,
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderSide: const BorderSide(color: Colors.white),

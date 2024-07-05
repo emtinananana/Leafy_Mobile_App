@@ -34,7 +34,6 @@ class CartProvider with ChangeNotifier {
     debugPrint("RESPONSE BODY: ${response.body}");
 
     if (response.statusCode == 200) {
-      // Decode and update cart items
       final data = json.decode(response.body);
       debugPrint("PARSED RESPONSE DATA: $data");
       _cartItems =
@@ -43,7 +42,6 @@ class CartProvider with ChangeNotifier {
       _updateTotalPrice();
       notifyListeners();
     } else {
-      // Handle error
       debugPrint(
           "Failed to fetch cart items. Status code: ${response.statusCode}");
     }

@@ -45,7 +45,7 @@ class MyApp extends StatelessWidget {
           ),
           useMaterial3: false,
         ),
-        home: const HomeScreen(),
+        home: const LandingScreen(),
       ),
     );
   }
@@ -85,6 +85,6 @@ class _ScreenRouterState extends State<ScreenRouter> {
 
   @override
   Widget build(BuildContext context) {
-    return haveToken ? const HomeScreen() : const HomeScreen();
+    return haveToken ? const HomeScreen() : const LoginScreen();
   }
 }

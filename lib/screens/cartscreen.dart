@@ -85,11 +85,11 @@ class _CartScreenState extends State<CartScreen> {
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            SizedBox(height: 8),
+                            const SizedBox(height: 8),
                             TextFormField(
                               initialValue:
                                   _giftDetails[index]['recipient_name'] ?? '',
-                              decoration: InputDecoration(
+                              decoration: const InputDecoration(
                                 labelText: 'Recipient Name',
                                 labelStyle: TextStyle(color: Colors.green),
                               ),
@@ -99,7 +99,7 @@ class _CartScreenState extends State<CartScreen> {
                                 });
                               },
                             ),
-                            SizedBox(height: 8),
+                            const SizedBox(height: 8),
                             TextFormField(
                               initialValue:
                                   _giftDetails[index]['recipient_phone'] ?? '',
@@ -114,7 +114,7 @@ class _CartScreenState extends State<CartScreen> {
                                 });
                               },
                             ),
-                            SizedBox(height: 8),
+                            const SizedBox(height: 8),
                             TextFormField(
                               initialValue: _giftDetails[index]
                                       ['recipient_address'] ??
@@ -130,7 +130,7 @@ class _CartScreenState extends State<CartScreen> {
                                 });
                               },
                             ),
-                            SizedBox(height: 8),
+                            const SizedBox(height: 8),
                             TextFormField(
                               initialValue: _giftDetails[index]['note'] ?? '',
                               decoration: const InputDecoration(
@@ -151,7 +151,7 @@ class _CartScreenState extends State<CartScreen> {
                     'Total: \$${cartProvider.totalPrice.toStringAsFixed(2)}',
                     style: GoogleFonts.oswald(
                       fontSize: 14,
-                      color: Color.fromARGB(221, 0, 0, 0),
+                      color: const Color.fromARGB(221, 0, 0, 0),
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -197,7 +197,7 @@ class _CartScreenState extends State<CartScreen> {
                     'Total: \$${cartProvider.totalPrice.toStringAsFixed(2)}',
                     style: GoogleFonts.oswald(
                       fontSize: 14,
-                      color: Color.fromARGB(221, 0, 0, 0),
+                      color: const Color.fromARGB(221, 0, 0, 0),
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -206,7 +206,7 @@ class _CartScreenState extends State<CartScreen> {
             ),
             actions: <Widget>[
               TextButton(
-                child: Text('Confirm Order',
+                child: const Text('Confirm Order',
                     style: TextStyle(color: Color.fromARGB(221, 44, 163, 58))),
                 onPressed: () async {
                   Navigator.of(context).pop();
@@ -259,7 +259,7 @@ class _CartScreenState extends State<CartScreen> {
             fontWeight: FontWeight.bold,
           ),
         ),
-        iconTheme: IconThemeData(color: Colors.black87),
+        iconTheme: const IconThemeData(color: Colors.black87),
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,

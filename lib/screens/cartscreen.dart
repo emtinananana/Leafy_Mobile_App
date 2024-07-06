@@ -4,6 +4,8 @@ import 'package:leafy_mobile_app/providers/cartprovider.dart';
 import 'package:provider/provider.dart';
 
 class CartScreen extends StatefulWidget {
+  const CartScreen({super.key});
+
   @override
   _CartScreenState createState() => _CartScreenState();
 }

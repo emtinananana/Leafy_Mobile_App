@@ -4,6 +4,7 @@ import 'package:leafy_mobile_app/main.dart';
 import 'package:leafy_mobile_app/screens/cartscreen.dart';
 import 'package:leafy_mobile_app/screens/favscreen.dart';
 import 'package:leafy_mobile_app/screens/historyscreen.dart';
+import 'package:leafy_mobile_app/screens/postsscreen.dart';
 import 'package:leafy_mobile_app/screens/profilescreen.dart';
 import 'package:provider/provider.dart';
 import 'package:leafy_mobile_app/models/products_model.dart';
@@ -247,7 +248,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   icon: Icon(Icons.post_add,
                       color: Colors.green.withOpacity(0.86)),
                   onPressed: () {
-                    // Navigate to posts
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context) => PostsScreen()));
                   },
                 ),
               ],

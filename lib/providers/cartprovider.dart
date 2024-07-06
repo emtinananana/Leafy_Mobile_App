@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 
 class CartProvider with ChangeNotifier {
   List<Map<String, dynamic>> _cartItems = [];
-  List<Map<String, dynamic>> _giftDetails = [];
+  final List<Map<String, dynamic>> _giftDetails = [];
   double _totalPrice = 0.0;
 
   List<Map<String, dynamic>> get giftDetails => _giftDetails;
@@ -141,12 +141,7 @@ class CartProvider with ChangeNotifier {
       );
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
-        List<Map<String, dynamic>> giftProducts = [];
-        if (jsonData.containsKey('gift_products')) {
-          giftProducts = List<Map<String, dynamic>>.from(
-            jsonData['gift_products'],
-          );
-        }
+        if (jsonData.containsKey('gift_products')) {}
         // Process fetched gift products
         // Example: _processGiftProducts(giftProducts);
       } else {

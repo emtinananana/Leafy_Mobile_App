@@ -1,8 +1,7 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:leafy_mobile_app/providers/authprovider.dart';
 import 'package:leafy_mobile_app/providers/cartprovider.dart';
+import 'package:leafy_mobile_app/providers/postprovider.dart';
 import 'package:leafy_mobile_app/providers/products_provider.dart';
 import 'package:leafy_mobile_app/screens/homescreen.dart';
 import 'package:leafy_mobile_app/screens/landingscreen.dart';
@@ -34,6 +33,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => AuthProvider()),
         ChangeNotifierProvider(create: (context) => ProductsProvider()),
         ChangeNotifierProvider(create: (_) => CartProvider()),
+        ChangeNotifierProvider(create: (context) => PostProvider()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

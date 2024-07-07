@@ -9,6 +9,8 @@ class AuthProvider with ChangeNotifier {
   late User _user = User(id: 0, name: '', email: '', phone: '', address: '');
   User get user => _user;
 
+  get likedPostIds => null;
+
   Future<bool> login(Map loginBody, BuildContext context) async {
     bool isLoggedIn = false;
 

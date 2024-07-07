@@ -1,137 +1,179 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:leafy_mobile_app/models/commentmodel.dart';
 import 'package:leafy_mobile_app/models/postmodel.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class PostProvider with ChangeNotifier {
-  List<Post> _posts = [];
-  String _baseUrl = 'http://127.0.0.1:8000/api/customer/posts';
+class PostProvider extends ChangeNotifier {
+  List<PostModel> _posts = [];
+  Set<int> _likedPostIds = {}; // Set to store liked post IDs
 
-  List<Post> get posts => _posts;
+  List<PostModel> get posts => _posts;
+  Set<int> get likedPostIds => _likedPostIds;
 
-  Future<void> fetchAllPosts() async {
+  PostProvider() {
+    fetchLikedPosts(); // Initialize liked posts from SharedPreferences
+  }
+
+  Future<List<PostModel>> fetchPosts() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString("token");
-    final url = Uri.parse(_baseUrl);
-    final response = await http.get(
-      url,
-      headers: {'Authorization': 'Bearer $token'},
-    );
+    final url = Uri.parse('http://127.0.0.1:8000/api/customer/posts');
+    final response =
+        await http.get(url, headers: {'Authorization': 'Bearer $token'});
 
     if (response.statusCode == 200) {
-      final List<dynamic> data = json.decode(response.body);
-      _posts = data.map((json) => Post.fromJson(json)).toList();
+      final List<dynamic> responseData = json.decode(response.body);
+      _posts = responseData.map((data) => PostModel.fromJson(data)).toList();
       notifyListeners();
+      return _posts;
     } else {
-      throw Exception('Failed to load posts');
+      throw Exception('Failed to fetch posts');
     }
   }
 
-  Future<void> createPost(String content, String imagePath) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? token = prefs.getString("token");
-    final url = Uri.parse(_baseUrl);
-
+  Future<List<PostModel>> fetchLikedPosts() async {
     try {
-      var request = http.MultipartRequest('POST', url)
-        ..fields['content'] = content
-        ..headers['Authorization'] = 'Bearer $token';
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? token = prefs.getString("token");
 
-      if (imagePath.isNotEmpty) {
-        request.files
-            .add(await http.MultipartFile.fromPath('image', imagePath));
-      }
+      final response = await http.get(
+        Uri.parse('http://127.0.0.1:8000/api/customer/likedposts'),
+        headers: {'Authorization': 'Bearer $token'},
+      );
 
-      var response = await request.send();
-
-      if (response.statusCode == 201 || response.statusCode == 200) {
-        final responseData = await response.stream.bytesToString();
-        final Post newPost = Post.fromJson(json.decode(responseData));
-        _posts.add(newPost);
+      if (response.statusCode == 200) {
+        List<dynamic> data = jsonDecode(response.body)['liked_posts'];
+        _likedPostIds =
+            data.map<int>((json) => PostModel.fromJson(json).id).toSet();
         notifyListeners();
+        return data.map((json) => PostModel.fromJson(json)).toList();
       } else {
-        // Log error response for debugging
-        final errorResponse = await response.stream.bytesToString();
-        print('Failed to create post. Status code: ${response.statusCode}');
-        print('Response body: $errorResponse');
-        throw Exception('Failed to create post');
+        throw Exception('Failed to fetch liked posts');
       }
     } catch (e) {
-      print('Error creating post: $e');
-      rethrow;
+      print('Error fetching liked posts: $e');
+      // Handle error appropriately, e.g., show error message
+      throw e; // Optionally rethrow to propagate the error
     }
   }
 
-  Future<void> likePost(int postId) async {
+  Future<void> toggleLikePost(int postId) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString("token");
-    final url = Uri.parse('$_baseUrl/like/$postId');
+
+    final likeUrl =
+        Uri.parse('http://127.0.0.1:8000/api/customer/posts/like/$postId');
+    final unlikeUrl =
+        Uri.parse('http://127.0.0.1:8000/api/customer/posts/unlike/$postId');
+
+    try {
+      // Determine the URL based on whether the post is liked or not
+      Uri url = isLiked(postId) ? unlikeUrl : likeUrl;
+
+      final response = await http.post(
+        url,
+        headers: {'Authorization': 'Bearer $token'},
+      );
+
+      if (response.statusCode == 200) {
+        // Update likedPostIds based on the toggle
+        if (isLiked(postId)) {
+          _likedPostIds.remove(postId);
+        } else {
+          _likedPostIds.add(postId);
+        }
+        // Save updated likedPostIds to SharedPreferences
+        await _saveLikedPostIds();
+        // Notify listeners or return something if needed
+        notifyListeners();
+      } else {
+        throw Exception('Failed to toggle like status');
+      }
+    } catch (error) {
+      print('Error toggling like: $error');
+      throw error;
+    }
+  }
+
+  bool isLiked(int postId) {
+    return _likedPostIds.contains(postId);
+  }
+
+  Future<void> _saveLikedPostIds() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+        'liked_post_ids', _likedPostIds.map((id) => id.toString()).toList());
+  }
+
+  Future<void> addComment(int postId, String content) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString("token");
+    final url =
+        Uri.parse('http://127.0.0.1:8000/api/customer/posts/$postId/comment');
+
+    try {
+      final response = await http.post(
+        url,
+        body: json.encode({'content': content}),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token'
+        },
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        // Parse response body to check if it's JSON
+        final responseData = json.decode(response.body);
+        if (responseData != null && responseData is Map<String, dynamic>) {
+          // Handle the response as needed, e.g., update UI or fetch updated data
+          await fetchPosts(); // Example refresh posts after adding a comment
+        } else {
+          throw Exception(
+              'Invalid JSON response'); // Example of error handling for unexpected API response format
+        }
+      } else {
+        throw Exception('Failed to add comment: ${response.statusCode}');
+      }
+    } catch (error) {
+      print('Error adding comment: $error');
+      throw error; // Propagate the error up if needed
+    }
+  }
+
+  Future<void> createPost(String content, String image) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString("token");
+    final url = Uri.parse('http://127.0.0.1:8000/api/customer/posts');
     final response = await http.post(
       url,
+      body: json.encode({'content': content, 'image': image}),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token'
       },
     );
 
-    if (response.statusCode == 200) {
-      _posts.indexWhere((post) => post.id == postId);
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      await fetchPosts();
     } else {
-      throw Exception('Failed to like post');
+      throw Exception('Failed to create post');
     }
   }
 
-  Future<void> commentOnPost(int postId, String content) async {
+  Future<List<PostModel>> searchPosts(String query) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString("token");
-    final url = Uri.parse('$_baseUrl/$postId/comment');
-
-    try {
-      final response = await http.post(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token'
-        },
-        body: json.encode({'content': content}),
-      );
-
-      if (response.statusCode == 201 || response.statusCode == 200) {
-        final Map<String, dynamic>? responseData = json.decode(response.body);
-        try {
-          final Comment newComment = Comment.fromJson(responseData);
-          final postIndex = _posts.indexWhere((post) => post.id == postId);
-          if (postIndex != -1) {
-            _posts[postIndex].comments.add(newComment);
-            notifyListeners();
-          }
-        } catch (e) {
-          throw Exception('Failed to parse comment data: $e');
-        }
-      } else {
-        throw Exception(
-            'Failed to comment on post. Status Code: ${response.statusCode}');
-      }
-    } catch (e) {
-      print('Failed to add comment: $e');
-      throw Exception('Failed to comment on post: $e');
-    }
-  }
-
-  Future<void> searchPosts(String query) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? token = prefs.getString("token");
-    final url = Uri.parse('$_baseUrl/$query');
-    final response = await http.get(url, headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer $token'
-    });
+    final url = Uri.parse('http://127.0.0.1:8000/api/customer/posts/$query');
+    final response =
+        await http.get(url, headers: {'Authorization': 'Bearer $token'});
 
     if (response.statusCode == 200) {
-      final List<dynamic> data = json.decode(response.body);
-      _posts = data.map((json) => Post.fromJson(json)).toList();
-      notifyListeners();
+      final List<dynamic> responseData = json.decode(response.body);
+      List<PostModel> searchResults =
+          responseData.map((data) => PostModel.fromJson(data)).toList();
+      return searchResults;
     } else {
       throw Exception('Failed to search posts');
     }
@@ -140,14 +182,14 @@ class PostProvider with ChangeNotifier {
   Future<void> deletePost(int postId) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString("token");
-    final url = Uri.parse('$_baseUrl/$postId');
+    final url = Uri.parse('http://127.0.0.1:8000/api/customer/post/$postId');
     final response = await http.delete(url, headers: {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer $token'
     });
 
     if (response.statusCode == 200) {
-      _posts.removeWhere((post) => post.id == postId);
+      posts.removeWhere((post) => post.id == postId);
       notifyListeners();
     } else {
       throw Exception('Failed to delete post');

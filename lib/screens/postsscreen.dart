@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:leafy_mobile_app/models/commentmodel.dart';
+import 'package:leafy_mobile_app/models/postmodel.dart';
+import 'package:leafy_mobile_app/providers/authprovider.dart';
 import 'package:leafy_mobile_app/providers/postprovider.dart';
 import 'package:provider/provider.dart';
-
-import 'package:leafy_mobile_app/models/postmodel.dart';
 
 class PostsScreen extends StatefulWidget {
   @override
@@ -10,298 +12,494 @@ class PostsScreen extends StatefulWidget {
 }
 
 class _PostsScreenState extends State<PostsScreen> {
+  TextEditingController _searchController = TextEditingController();
+  final TextEditingController _commentController = TextEditingController();
+  final TextEditingController _postContentController = TextEditingController();
+  final TextEditingController _postImageController = TextEditingController();
+
+  List<PostModel> _posts = []; // List to hold all posts
+
   @override
   void initState() {
     super.initState();
-    Provider.of<PostProvider>(context, listen: false).fetchAllPosts();
+    // Fetch posts when screen initializes
+    _fetchPosts();
+    // Listen to changes in the search input
+    _searchController.addListener(() {
+      _filterPosts(_searchController.text);
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void toggleLike(PostModel post) {
+    try {
+      final postsProvider = Provider.of<PostProvider>(context, listen: false);
+      postsProvider.toggleLikePost(post.id).then((_) async {
+        // Optionally, you may need to update the local state if not using a Consumer
+        setState(() {
+          // Update the local posts list or relevant UI state as needed
+        });
+        await _fetchPosts();
+      }).catchError((error) {
+        print('Error toggling like: $error');
+        // Handle error gracefully
+      });
+    } catch (e) {
+      print('Error toggling like: $e');
+      // Handle error gracefully
+    }
+  }
+
+  Future<void> _fetchPosts() async {
+    try {
+      List<PostModel> posts =
+          await Provider.of<PostProvider>(context, listen: false).fetchPosts();
+
+      setState(() {
+        _posts = posts; // Handle null case to prevent errors
+      });
+    } catch (error) {
+      if (error.toString().contains('404')) {
+        setState(() {
+          _posts = [];
+        });
+      } else {
+        print('Error fetching posts: $error');
+      }
+    }
+  }
+
+  Future<void> _filterPosts(String query) async {
+    try {
+      List<PostModel> filteredPosts;
+      if (query.isEmpty) {
+        // Fetch all posts if search query is empty
+        filteredPosts = await Provider.of<PostProvider>(context, listen: false)
+            .fetchPosts();
+      } else {
+        // Fetch filtered posts based on search query
+        filteredPosts = await Provider.of<PostProvider>(context, listen: false)
+            .searchPosts(query);
+      }
+      setState(() {
+        _posts = filteredPosts;
+      });
+    } catch (error) {
+      if (error.toString().contains('404')) {
+        // Handle 404 error by setting _posts to an empty list
+        setState(() {
+          _posts = [];
+        });
+      } else {
+        // Handle other errors
+        print('Error filtering posts: $error');
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Full Post Screen'),
+        iconTheme: const IconThemeData(color: Colors.black87),
+        elevation: 0,
+        backgroundColor: Colors.white,
+        title: Text(
+          'Posts',
+          style: GoogleFonts.oswald(
+            fontSize: 24,
+            color: const Color.fromARGB(221, 44, 163, 58),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
-      body: Consumer<PostProvider>(
-        builder: (context, provider, child) {
-          List<Post> posts = provider.posts;
-
-          if (posts.isEmpty) {
-            return Center(child: CircularProgressIndicator());
-          }
-
-          return ListView.builder(
-            itemCount: posts.length,
-            itemBuilder: (context, index) {
-              Post post = posts[index];
-              return PostItem(post: post);
-            },
-          );
+      body: RefreshIndicator(
+        onRefresh: () async {
+          await _fetchPosts();
         },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          showDialog(
-            context: context,
-            builder: (context) => AddPostDialog(),
-          );
-        },
-        child: Icon(Icons.add),
-      ),
-    );
-  }
-}
-
-class PostItem extends StatelessWidget {
-  final Post post;
-
-  PostItem({required this.post});
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      margin: EdgeInsets.all(8.0),
-      child: Padding(
-        padding: EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              post.content,
-              style: TextStyle(fontSize: 18.0),
-            ),
-            SizedBox(height: 8.0),
-            if (post.image.isNotEmpty)
-              Image.network(
-                post.image,
-                height: 200,
-                width: double.infinity,
-                fit: BoxFit.cover,
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  labelText: 'Search Posts',
+                  labelStyle:
+                      TextStyle(color: Color.fromARGB(221, 44, 163, 58)),
+                  hintText: 'Search...',
+                  prefixIcon: const Icon(
+                    Icons.search,
+                    color: Color.fromARGB(221, 44, 163, 58),
+                  ),
+                  suffixIcon: IconButton(
+                    icon: const Icon(Icons.clear,
+                        color: Color.fromARGB(221, 44, 163, 58)),
+                    onPressed: () {
+                      _searchController.clear();
+                      _filterPosts('');
+                    },
+                  ),
+                ),
               ),
-            SizedBox(height: 16.0),
-            Text(
-              'Posted on: ${post.postDate}',
-              style: TextStyle(color: Colors.grey),
             ),
-            SizedBox(height: 16.0),
-            Text(
-              'Comments (${post.comments.length})',
-              style: TextStyle(fontWeight: FontWeight.bold),
+            Expanded(
+              child: _posts.isEmpty
+                  ? const Center(
+                      child: Text('No posts available.'),
+                    )
+                  : ListView.builder(
+                      itemCount: _posts.length,
+                      itemBuilder: (context, index) {
+                        PostModel post = _posts[index];
+                        bool isUserPost = post.customer.id ==
+                            Provider.of<AuthProvider>(context).user.id;
+                        bool isLiked = Provider.of<PostProvider>(context)
+                            .likedPostIds
+                            .contains(post.id);
+                        return Column(
+                          children: [
+                            Card(
+                              margin: const EdgeInsets.all(10),
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const SizedBox(height: 8),
+                                    if (post.image != null &&
+                                        post.image.isNotEmpty)
+                                      Image.network(
+                                        post.image,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      post.content,
+                                      style: const TextStyle(fontSize: 16),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Row(
+                                      children: [
+                                        Text(
+                                          'By: ${post.customer.name}',
+                                          style: const TextStyle(
+                                            color: Colors.grey,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                        const SizedBox(
+                                          width: 5,
+                                        ),
+                                        Text(
+                                          '${post.postDate}',
+                                          style: const TextStyle(
+                                            color: Colors.grey,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                        const Spacer(),
+                                        Row(
+                                          children: [
+                                            IconButton(
+                                              icon: Icon(
+                                                isLiked
+                                                    ? Icons.favorite
+                                                    : Icons.favorite_border,
+                                                color: isLiked
+                                                    ? Colors.red
+                                                    : Colors.grey,
+                                                size: 30,
+                                              ),
+                                              onPressed: () {
+                                                toggleLike(
+                                                    post); // Toggle the like status
+                                                // No need for setState() here if you're using Provider for state management
+                                                final message = isLiked
+                                                    ? 'Post unliked successfully!'
+                                                    : 'Post liked successfully!';
+                                                final snackBar = SnackBar(
+                                                    content: Text(message));
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(snackBar);
+                                              },
+                                            ),
+                                            Text('${post.likeCount} Likes'),
+                                            SizedBox(
+                                              width: 3,
+                                            ),
+                                            IconButton(
+                                              icon: const Icon(Icons.chat,
+                                                  color: Color.fromARGB(
+                                                      221, 44, 163, 58)),
+                                              onPressed: () {
+                                                _showCommentDialog(post);
+                                              },
+                                            ),
+                                            isUserPost
+                                                ? PopupMenuButton(
+                                                    itemBuilder: (context) => [
+                                                      const PopupMenuItem(
+                                                        value: 'delete',
+                                                        child: Text(
+                                                          'Delete',
+                                                          style: TextStyle(
+                                                              color: Color
+                                                                  .fromARGB(
+                                                                      221,
+                                                                      44,
+                                                                      163,
+                                                                      58)),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                    onSelected: (value) {
+                                                      if (value == 'delete') {
+                                                        _confirmDeletePost(
+                                                            post);
+                                                      }
+                                                    },
+                                                  )
+                                                : const SizedBox.shrink(),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                    if (post.comments.isNotEmpty) ...[
+                                      const Divider(),
+                                      const Padding(
+                                        padding: EdgeInsets.all(8.0),
+                                        child: Text(
+                                          'Comments:',
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
+                                      ListView.builder(
+                                        shrinkWrap: true,
+                                        physics:
+                                            const NeverScrollableScrollPhysics(),
+                                        itemCount: post.comments.length,
+                                        itemBuilder: (context, commentIndex) {
+                                          CommentModel comment =
+                                              post.comments[commentIndex];
+                                          return ListTile(
+                                            title: Text(comment.content),
+                                            subtitle: Text(
+                                                'By: ${comment.customer.name}'),
+                                          );
+                                        },
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const Divider(),
+                          ],
+                        );
+                      },
+                    ),
             ),
-            SizedBox(height: 8.0),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: post.comments
-                  .map((comment) => CommentItem(comment: comment))
-                  .toList(),
-            ),
-            SizedBox(height: 16.0),
-            ElevatedButton(
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (context) => AddCommentDialog(postId: post.id),
-                );
-              },
-              child: Text('Add Comment'),
-            ),
-            SizedBox(height: 16.0),
           ],
         ),
       ),
-    );
-  }
-}
-
-class CommentItem extends StatelessWidget {
-  final Comment comment;
-
-  CommentItem({required this.comment});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            comment.content,
-            style: TextStyle(fontSize: 16.0),
-          ),
-          SizedBox(height: 4.0),
-          Text(
-            'By: ${comment.customer.name}',
-            style: TextStyle(color: Colors.grey),
-          ),
-          Text(
-            'Posted on: ${comment.commentDate}',
-            style: TextStyle(color: Colors.grey),
-          ),
-          Divider(),
-        ],
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: const Color.fromARGB(221, 44, 163, 58),
+        onPressed: () {
+          _showCreatePostDialog(context);
+        },
+        child: const Icon(Icons.add),
       ),
     );
   }
-}
+// void _likePost(PostModel post) async {
+//   try {
+//     await Provider.of<PostProvider>(context, listen: false).toggleLikePost(post.id);
 
-class AddPostDialog extends StatelessWidget {
-  final TextEditingController _contentController = TextEditingController();
-  final TextEditingController _imageController = TextEditingController();
+//     // Update the local isLiked state
+//     setState(() {
+//     isLiked = !isLiked;
+//     });
 
-  @override
-  Widget build(BuildContext context) {
-    return Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16.0),
-      ),
-      elevation: 0.0,
-      backgroundColor: Colors.transparent,
-      child: contentBox(context),
-    );
-  }
+//     final message = isLiked
+//         ? 'Post unliked successfully!'
+//         : 'Post liked successfully!';
+//     final snackBar = SnackBar(content: Text(message));
+//     ScaffoldMessenger.of(context).showSnackBar(snackBar);
+//   } catch (error) {
+//     print('Error liking/unliking post: $error');
+//   }
+// }
 
-  contentBox(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(16.0),
-      decoration: BoxDecoration(
-        shape: BoxShape.rectangle,
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16.0),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black,
-            offset: Offset(0, 10),
-            blurRadius: 10.0,
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            "Add Post",
-            style: TextStyle(fontSize: 22.0, fontWeight: FontWeight.bold),
-          ),
-          SizedBox(height: 16.0),
-          TextField(
-            controller: _contentController,
-            decoration: InputDecoration(
-              hintText: "Enter your post content",
-              border: OutlineInputBorder(),
-            ),
-            maxLines: 4,
-          ),
-          SizedBox(height: 16.0),
-          TextField(
-            controller: _imageController,
-            decoration: InputDecoration(
-              hintText: "Enter image URL (optional)",
-              border: OutlineInputBorder(),
-            ),
-          ),
-          SizedBox(height: 16.0),
-          ElevatedButton(
-            onPressed: () async {
-              String content = _contentController.text.trim();
-              String imagePath = _imageController.text.trim();
-              try {
-                await Provider.of<PostProvider>(context, listen: false)
-                    .createPost(content, imagePath);
-                Navigator.of(context).pop();
-              } catch (e) {
-                showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: Text('Error'),
-                    content: Text('Failed to add post. Please try again.'),
-                    actions: <Widget>[
-                      TextButton(
-                        child: Text('OK'),
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                      ),
-                    ],
-                  ),
-                );
-              }
-            },
-            child: Text("Add Post"),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class AddCommentDialog extends StatelessWidget {
-  final int postId;
-  final TextEditingController _commentController = TextEditingController();
-
-  AddCommentDialog({required this.postId});
-
-  @override
-  Widget build(BuildContext context) {
-    return Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16.0),
-      ),
-      elevation: 0.0,
-      backgroundColor: Colors.transparent,
-      child: contentBox(context),
-    );
-  }
-
-  contentBox(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(16.0),
-      decoration: BoxDecoration(
-        shape: BoxShape.rectangle,
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16.0),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black,
-            offset: Offset(0, 10),
-            blurRadius: 10.0,
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            "Add Comment",
-            style: TextStyle(fontSize: 22.0, fontWeight: FontWeight.bold),
-          ),
-          SizedBox(height: 16.0),
-          TextField(
+  void _showCommentDialog(PostModel post) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Add Comment',
+              style: GoogleFonts.oswald(
+                  fontSize: 20,
+                  color: const Color.fromARGB(221, 0, 0, 0),
+                  fontWeight: FontWeight.bold)),
+          content: TextField(
             controller: _commentController,
-            decoration: InputDecoration(
-              hintText: "Enter your comment",
-              border: OutlineInputBorder(),
-            ),
-            maxLines: 4,
+            decoration: const InputDecoration(hintText: 'Enter your comment'),
           ),
-          SizedBox(height: 16.0),
-          ElevatedButton(
-            onPressed: () async {
-              String content = _commentController.text.trim();
-
-              try {
-                await Provider.of<PostProvider>(context, listen: false)
-                    .commentOnPost(postId, content);
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel',
+                  style: TextStyle(color: Color.fromARGB(221, 44, 163, 58))),
+              onPressed: () {
                 Navigator.of(context).pop();
-              } catch (e) {
-                print('Failed to add comment: $e');
-                // Handle error display or logging here
-              }
-            },
-            child: Text("Add Comment"),
-          ),
-        ],
-      ),
+              },
+            ),
+            TextButton(
+              child: const Text('Comment',
+                  style: TextStyle(color: Color.fromARGB(221, 44, 163, 58))),
+              onPressed: () async {
+                try {
+                  await Provider.of<PostProvider>(context, listen: false)
+                      .addComment(post.id, _commentController.text);
+
+                  // Fetch updated posts list after adding comment
+                  await _fetchPosts();
+
+                  Navigator.of(context).pop(); // Close dialog
+                  _commentController.clear(); // Clear comment text field
+                } catch (error) {
+                  // Handle error
+                  print('Error adding comment: $error');
+                }
+              },
+            ),
+          ],
+        );
+      },
     );
+  }
+
+  void _showCreatePostDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Create Post',
+              style: GoogleFonts.oswald(
+                  fontSize: 24,
+                  color: const Color.fromARGB(221, 0, 0, 0),
+                  fontWeight: FontWeight.bold)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              TextField(
+                controller: _postContentController,
+                maxLines: 5, // Increase the input field height
+                decoration: InputDecoration(
+                  hintText: 'Enter post content',
+                  filled: true,
+                  fillColor: Colors.green.shade50,
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _postImageController,
+                decoration: const InputDecoration(
+                  hintText: 'Enter image URL',
+                ),
+              ),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel',
+                  style: TextStyle(color: Color.fromARGB(221, 44, 163, 58))),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Post',
+                  style: TextStyle(color: Color.fromARGB(221, 44, 163, 58))),
+              onPressed: () async {
+                try {
+                  await Provider.of<PostProvider>(context, listen: false)
+                      .createPost(
+                    _postContentController.text,
+                    _postImageController.text,
+                  );
+
+                  await _fetchPosts();
+
+                  Navigator.of(context).pop();
+                  _postContentController.clear();
+                  _postImageController.clear();
+                } catch (error) {
+                  print('Error creating post: $error');
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _confirmDeletePost(PostModel post) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Confirm Delete',
+              style: GoogleFonts.oswald(
+                  fontSize: 24,
+                  color: const Color.fromARGB(221, 0, 0, 0),
+                  fontWeight: FontWeight.bold)),
+          content: const Text('Are you sure you want to delete this post?'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel',
+                  style: TextStyle(color: Color.fromARGB(221, 44, 163, 58))),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Delete',
+                  style: TextStyle(color: Color.fromARGB(221, 44, 163, 58))),
+              onPressed: () async {
+                try {
+                  await Provider.of<PostProvider>(context, listen: false)
+                      .deletePost(post.id);
+
+                  // Update _posts after deletion
+                  setState(() {
+                    _posts.remove(post);
+                  });
+
+                  Navigator.of(context).pop(); // Close dialog
+                } catch (error) {
+                  print('Error deleting post: $error');
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  String _truncatePostContent(String content) {
+    if (content.length > 100) {
+      return content.substring(0, 100) + '...';
+    } else {
+      return content;
+    }
   }
 }

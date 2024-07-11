@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:leafy_mobile_app/screens/loginscreen.dart';
 import 'package:leafy_mobile_app/screens/registerscreen.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class LandingScreen extends StatelessWidget {
   const LandingScreen({super.key});
@@ -28,11 +29,11 @@ class BackgroundImage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text(
-              'LEAFY',
-              style: TextStyle(
+            Text(
+              'L E A F Y',
+              style: GoogleFonts.oswald(
                 color: Colors.white,
-                fontSize: 32,
+                fontSize: 43,
               ),
             ),
             Padding(
@@ -51,10 +52,11 @@ class BackgroundImage extends StatelessWidget {
                             const Color.fromARGB(89, 149, 180, 158),
                         minimumSize: const Size(114, 40),
                       ),
-                      child: const Text(
+                      child: Text(
                         'Sign Up',
-                        style: TextStyle(
+                        style: GoogleFonts.oswald(
                           color: Colors.white,
+                          fontSize: 20,
                         ),
                       )),
                   const SizedBox(height: 26.0),
@@ -71,8 +73,11 @@ class BackgroundImage extends StatelessWidget {
                             const Color.fromARGB(89, 149, 180, 158),
                         minimumSize: const Size(114, 40),
                       ),
-                      child: const Text('Login',
-                          style: TextStyle(color: Colors.white)))
+                      child: Text('Login',
+                          style: GoogleFonts.oswald(
+                            color: Colors.white,
+                            fontSize: 20,
+                          )))
                 ],
               ),
             ),

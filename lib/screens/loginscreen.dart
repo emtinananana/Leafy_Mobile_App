@@ -205,7 +205,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             minimumSize: const Size(114, 40),
                           ),
                           child: const Text('Login',
-                              style: TextStyle(color: Colors.white)))
+                              style:
+                                  TextStyle(color: Colors.white, fontSize: 17)))
                     ],
                   ),
                 ),

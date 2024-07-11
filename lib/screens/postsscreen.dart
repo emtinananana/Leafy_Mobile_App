@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:leafy_mobile_app/models/commentmodel.dart';
 import 'package:leafy_mobile_app/models/postmodel.dart';
 import 'package:leafy_mobile_app/providers/authprovider.dart';
@@ -385,67 +388,115 @@ class _PostsScreenState extends State<PostsScreen> {
   }
 
   void _showCreatePostDialog(BuildContext context) {
+    XFile? _pickedImage; // Use XFile to store picked image
+
+    Future<void> _pickImage(ImageSource source) async {
+      final pickedImageFile = await ImagePicker().pickImage(
+        source: source,
+        imageQuality: 50, // Adjust image quality as needed
+      );
+
+      setState(() {
+        _pickedImage = pickedImageFile; // Assign XFile to _pickedImage
+      });
+    }
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Create Post',
-              style: GoogleFonts.oswald(
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Text(
+                'Create Post',
+                style: TextStyle(
                   fontSize: 24,
-                  color: const Color.fromARGB(221, 0, 0, 0),
-                  fontWeight: FontWeight.bold)),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              TextField(
-                controller: _postContentController,
-                maxLines: 5, // Increase the input field height
-                decoration: InputDecoration(
-                  hintText: 'Enter post content',
-                  filled: true,
-                  fillColor: Colors.green.shade50,
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _postImageController,
-                decoration: const InputDecoration(
-                  hintText: 'Enter image URL',
-                ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  TextField(
+                    controller: _postContentController,
+                    maxLines: 5,
+                    decoration: InputDecoration(
+                      hintText: 'Enter post content',
+                      filled: true,
+                      fillColor: Colors.grey.shade200,
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  if (_pickedImage != null)
+                    Image.file(
+                      File(_pickedImage!.path), // Display picked image
+                      height: 100,
+                      width: 100,
+                      fit: BoxFit.cover,
+                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      ElevatedButton.icon(
+                        onPressed: () => _pickImage(ImageSource.camera),
+                        icon: Icon(Icons.camera_alt),
+                        label: Text('Camera'),
+                      ),
+                      ElevatedButton.icon(
+                        onPressed: () => _pickImage(ImageSource.gallery),
+                        icon: Icon(Icons.image),
+                        label: Text('Gallery'),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-            ],
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Cancel',
-                  style: TextStyle(color: Color.fromARGB(221, 44, 163, 58))),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            TextButton(
-              child: const Text('Post',
-                  style: TextStyle(color: Color.fromARGB(221, 44, 163, 58))),
-              onPressed: () async {
-                try {
-                  await Provider.of<PostProvider>(context, listen: false)
-                      .createPost(
-                    _postContentController.text,
-                    _postImageController.text,
-                  );
+              actions: <Widget>[
+                TextButton(
+                  child: Text(
+                    'Cancel',
+                    style: TextStyle(color: Colors.green),
+                  ),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+                TextButton(
+                  child: Text(
+                    'Post',
+                    style: TextStyle(color: Colors.green),
+                  ),
+                  onPressed: () async {
+                    try {
+                      if (_pickedImage != null) {
+                        // Perform post creation with image upload
+                        String postImagePath = _pickedImage!.path;
+                        await Provider.of<PostProvider>(context, listen: false)
+                            .createPost(
+                          _postContentController.text,
+                          postImagePath,
+                        );
 
-                  await _fetchPosts();
+                        await _fetchPosts();
 
-                  Navigator.of(context).pop();
-                  _postContentController.clear();
-                  _postImageController.clear();
-                } catch (error) {
-                  print('Error creating post: $error');
-                }
-              },
-            ),
-          ],
+                        Navigator.of(context).pop();
+                        _postContentController.clear();
+                        setState(() {
+                          _pickedImage = null;
+                        });
+                      } else {
+                        print('No image selected.');
+                      }
+                    } catch (error) {
+                      print('Error creating post: $error');
+                    }
+                  },
+                ),
+              ],
+            );
+          },
         );
       },
     );

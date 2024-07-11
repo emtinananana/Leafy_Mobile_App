@@ -99,6 +99,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           body: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -122,7 +123,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                padding: const EdgeInsets.symmetric(horizontal: 5.0),
                 child: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(
@@ -144,8 +145,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         );
                       }).toList(),
                       IconButton(
-                        icon:
-                            const Icon(Icons.filter_list, color: Colors.green),
+                        icon: const Icon(
+                          Icons.filter_list_alt,
+                          color: Colors.green,
+                        ),
                         onPressed: () {
                           selectedProductType = 'All';
                           _showTagFilterDialog(productsConsumer);
@@ -258,8 +261,7 @@ class _HomeScreenState extends State<HomeScreen> {
           drawer: Drawer(
             child: SafeArea(
               child: Column(
-                mainAxisAlignment: MainAxisAlignment
-                    .start, // Changed to start to avoid items being pushed to the end
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   ListTile(
                     title: const Text("Profile"),
@@ -407,7 +409,7 @@ class FilterButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        margin: const EdgeInsets.only(right: 8.0),
+        margin: const EdgeInsets.all(4.0),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
           color: isSelected ? Colors.green : Colors.grey[200],

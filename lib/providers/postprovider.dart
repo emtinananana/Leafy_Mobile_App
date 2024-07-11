@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:leafy_mobile_app/models/commentmodel.dart';
@@ -142,19 +143,28 @@ class PostProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> createPost(String content, String image) async {
+  Future<void> createPost(String content, String imagePath) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString("token");
-    final url = Uri.parse('http://127.0.0.1:8000/api/customer/posts');
-    final response = await http.post(
-      url,
-      body: json.encode({'content': content, 'image': image}),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token'
-      },
-    );
 
+    // Create a multipart request
+    var request = http.MultipartRequest(
+        'POST', Uri.parse('http://127.0.0.1:8000/api/customer/posts'));
+
+    // Add headers
+    request.headers['Authorization'] = 'Bearer $token';
+
+    // Add fields (content)
+    request.fields['content'] = content;
+
+    // Add image file
+    var imageFile = await http.MultipartFile.fromPath('image', imagePath);
+    request.files.add(imageFile);
+
+    // Send request
+    var response = await request.send();
+
+    // Handle response
     if (response.statusCode == 200 || response.statusCode == 201) {
       await fetchPosts();
     } else {

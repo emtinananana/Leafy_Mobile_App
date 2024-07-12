@@ -6,6 +6,7 @@ import 'package:leafy_mobile_app/providers/products_provider.dart';
 import 'package:leafy_mobile_app/screens/homescreen.dart';
 import 'package:leafy_mobile_app/screens/landingscreen.dart';
 import 'package:leafy_mobile_app/screens/loginscreen.dart';
+import 'package:leafy_mobile_app/screens/splashscreen.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -30,10 +31,19 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (context) => AuthProvider()),
         ChangeNotifierProvider(create: (context) => ProductsProvider()),
-        ChangeNotifierProvider(create: (_) => CartProvider()),
         ChangeNotifierProvider(create: (context) => PostProvider()),
+        ChangeNotifierProxyProvider<ProductsProvider, AuthProvider>(
+          create: (context) => AuthProvider(
+            Provider.of<ProductsProvider>(context, listen: false),
+            Provider.of<PostProvider>(context, listen: false),
+          ),
+          update: (context, productsProvider, authProvider) {
+            authProvider!.productsProvider = productsProvider;
+            return authProvider;
+          },
+        ),
+        ChangeNotifierProvider(create: (_) => CartProvider()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -45,7 +55,7 @@ class MyApp extends StatelessWidget {
           ),
           useMaterial3: false,
         ),
-        home: const LandingScreen(),
+        home: Splashscreen(),
       ),
     );
   }

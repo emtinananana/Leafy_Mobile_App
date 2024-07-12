@@ -39,6 +39,20 @@ class _PostsScreenState extends State<PostsScreen> {
     super.dispose();
   }
 
+  String _truncatePostContent(String content, bool showFullContent) {
+    const maxLength = 100;
+
+    if (showFullContent) {
+      return content;
+    }
+
+    if (content.length <= maxLength) {
+      return content;
+    }
+
+    return '${content.substring(0, maxLength)}...';
+  }
+
   void toggleLike(PostModel post) {
     try {
       final postsProvider = Provider.of<PostProvider>(context, listen: false);
@@ -154,7 +168,10 @@ class _PostsScreenState extends State<PostsScreen> {
             Expanded(
               child: _posts.isEmpty
                   ? const Center(
-                      child: Text('No posts available.'),
+                      child: Text(
+                        'No posts available.',
+                        style: TextStyle(fontSize: 18),
+                      ),
                     )
                   : ListView.builder(
                       itemCount: _posts.length,
@@ -165,6 +182,9 @@ class _PostsScreenState extends State<PostsScreen> {
                         bool isLiked = Provider.of<PostProvider>(context)
                             .likedPostIds
                             .contains(post.id);
+                        bool showFullContent =
+                            false; // Track full content display
+
                         return Column(
                           children: [
                             Card(
@@ -179,13 +199,10 @@ class _PostsScreenState extends State<PostsScreen> {
                                         post.image.isNotEmpty)
                                       Image.network(
                                         post.image,
-                                        fit: BoxFit.cover,
+                                        fit: BoxFit.contain,
                                       ),
                                     const SizedBox(height: 8),
-                                    Text(
-                                      post.content,
-                                      style: const TextStyle(fontSize: 16),
-                                    ),
+                                    PostWidget(content: post.content),
                                     const SizedBox(height: 8),
                                     Row(
                                       children: [
@@ -196,9 +213,7 @@ class _PostsScreenState extends State<PostsScreen> {
                                             fontSize: 12,
                                           ),
                                         ),
-                                        const SizedBox(
-                                          width: 5,
-                                        ),
+                                        const SizedBox(width: 5),
                                         Text(
                                           '${post.postDate}',
                                           style: const TextStyle(
@@ -222,20 +237,19 @@ class _PostsScreenState extends State<PostsScreen> {
                                               onPressed: () {
                                                 toggleLike(
                                                     post); // Toggle the like status
-                                                // No need for setState() here if you're using Provider for state management
                                                 final message = isLiked
                                                     ? 'Post unliked successfully!'
                                                     : 'Post liked successfully!';
                                                 final snackBar = SnackBar(
-                                                    content: Text(message));
+                                                  content: Text(message),
+                                                  backgroundColor: Colors.green,
+                                                );
                                                 ScaffoldMessenger.of(context)
                                                     .showSnackBar(snackBar);
                                               },
                                             ),
                                             Text('${post.likeCount} Likes'),
-                                            SizedBox(
-                                              width: 3,
-                                            ),
+                                            SizedBox(width: 3),
                                             IconButton(
                                               icon: const Icon(Icons.chat,
                                                   color: Color.fromARGB(
@@ -303,7 +317,6 @@ class _PostsScreenState extends State<PostsScreen> {
                                 ),
                               ),
                             ),
-                            const Divider(),
                           ],
                         );
                       },
@@ -545,12 +558,63 @@ class _PostsScreenState extends State<PostsScreen> {
       },
     );
   }
+}
 
-  String _truncatePostContent(String content) {
-    if (content.length > 100) {
-      return content.substring(0, 100) + '...';
-    } else {
+class PostWidget extends StatefulWidget {
+  final String content;
+
+  const PostWidget({Key? key, required this.content}) : super(key: key);
+
+  @override
+  _PostWidgetState createState() => _PostWidgetState();
+}
+
+class _PostWidgetState extends State<PostWidget> {
+  bool showFullContent = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          showFullContent ? widget.content : _truncateString(widget.content),
+          style: const TextStyle(fontSize: 16),
+          maxLines:
+              showFullContent ? null : 2, // Limit to 2 lines when not expanded
+          overflow: showFullContent
+              ? TextOverflow.visible
+              : TextOverflow.ellipsis, // Show ellipsis when not expanded
+        ),
+        if (!_isContentShort())
+          TextButton(
+            onPressed: () {
+              setState(() {
+                showFullContent = !showFullContent;
+              });
+            },
+            child: Text(
+              showFullContent ? 'Read Less' : 'Read More',
+              style: TextStyle(
+                color: Colors.green,
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  bool _isContentShort() {
+    return widget.content.length <=
+        100; // Adjust the character count (100) as per your requirement
+  }
+
+  String _truncateString(String content) {
+    final words = content.split(' ');
+    if (words.length <= 20) {
+      // Adjust the number of words (20) to fit your needs
       return content;
     }
+    return words.take(20).join(' ') + '...';
   }
 }

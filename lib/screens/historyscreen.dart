@@ -89,7 +89,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
         iconTheme: const IconThemeData(color: Colors.black87),
       ),
       body: orders.isEmpty
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(
+              child: Text(
+                'You have no orders yet.',
+                style: TextStyle(
+                  fontSize: 18,
+                ),
+              ),
+            )
           : ListView.builder(
               itemCount: orders.length,
               itemBuilder: (context, index) {
@@ -100,7 +107,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     title: Text(
                       'Status: ${order.status}',
                       style: const TextStyle(
-                        color: Color.fromARGB(221, 0, 0, 0), // Green color
+                        color: Color.fromARGB(221, 0, 0, 0), // Black color
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -184,7 +191,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
                         Align(
                           alignment: Alignment.centerRight,
                           child: ElevatedButton(
-                            onPressed: () => cancelOrder(order.id),
+                            onPressed: () =>
+                                showCancelConfirmationDialog(order.id),
                             style: ButtonStyle(
                                 backgroundColor:
                                     MaterialStateProperty.all<Color>(
@@ -204,6 +212,43 @@ class _HistoryScreenState extends State<HistoryScreen> {
     );
   }
 
+  void showCancelConfirmationDialog(int orderId) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Cancel Order',
+              style: GoogleFonts.oswald(
+                  fontSize: 24,
+                  color: const Color.fromARGB(221, 44, 163, 58),
+                  fontWeight: FontWeight.bold)),
+          content: const Text('Are you sure you want to cancel this order?'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: const Text(
+                'No',
+                style: TextStyle(color: const Color.fromARGB(221, 44, 163, 58)),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+                cancelOrder(orderId); // Proceed with canceling the order
+              },
+              child: const Text('Yes',
+                  style: TextStyle(
+                    color: const Color.fromARGB(221, 44, 163, 58),
+                  )),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Future<void> cancelOrder(int orderId) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString("token");
@@ -216,18 +261,28 @@ class _HistoryScreenState extends State<HistoryScreen> {
         },
       );
       if (response.statusCode == 200) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Order cancelled successfully')));
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text(
+            'Order cancelled successfully',
+          ),
+          backgroundColor: Colors.green,
+        ));
         fetchOrders(); // Refresh orders after cancellation
       } else {
         print('Failed to cancel order: ${response.statusCode}');
         ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Failed to cancel order')));
+          const SnackBar(
+            content: Text('Failed to cancel order'),
+            backgroundColor: Colors.green,
+          ),
+        );
       }
     } catch (e) {
       print('Error cancelling order: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Error cancelling order')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Error cancelling order'),
+        backgroundColor: Colors.green,
+      ));
     }
   }
 }

@@ -31,10 +31,10 @@ class BackgroundImage extends StatelessWidget {
           children: [
             Text(
               'L E A F Y',
-              style: GoogleFonts.oswald(
-                color: Colors.white,
-                fontSize: 43,
-              ),
+              style: GoogleFonts.roboto(
+                  color: Colors.white,
+                  fontSize: 39,
+                  fontWeight: FontWeight.bold),
             ),
             Padding(
               padding: const EdgeInsets.only(top: 30.0),
@@ -54,9 +54,9 @@ class BackgroundImage extends StatelessWidget {
                       ),
                       child: Text(
                         'Sign Up',
-                        style: GoogleFonts.oswald(
+                        style: GoogleFonts.roboto(
                           color: Colors.white,
-                          fontSize: 20,
+                          fontSize: 18,
                         ),
                       )),
                   const SizedBox(height: 26.0),
@@ -74,9 +74,9 @@ class BackgroundImage extends StatelessWidget {
                         minimumSize: const Size(114, 40),
                       ),
                       child: Text('Login',
-                          style: GoogleFonts.oswald(
+                          style: GoogleFonts.roboto(
                             color: Colors.white,
-                            fontSize: 20,
+                            fontSize: 18,
                           )))
                 ],
               ),

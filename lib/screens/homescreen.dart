@@ -25,23 +25,18 @@ class _HomeScreenState extends State<HomeScreen> {
   String selectedProductType = 'All';
   List<String> productTypes = ['All'];
   List<String> _tags = [];
-  void searchProducts(String query) {
-    if (query.isEmpty) {
-      setState(() {
-        // Clear the search and show all products based on selected type
-        selectedProductType = 'All';
-      });
-      Provider.of<ProductsProvider>(context, listen: false).getProducts();
-    } else {
-      // Update search query and filter products
 
-      setState(() {
-        // selectedProductType = 'All';
-        //  // Reset product type filter
-      });
-      Provider.of<ProductsProvider>(context, listen: false);
-      searchProducts(query);
-    }
+  void searchProducts(String query) {
+    setState(() {
+      if (query.isEmpty) {
+        searchController.clear();
+      } else {
+        selectedProductType = 'All';
+        searchController.text = query;
+      }
+    });
+
+    Provider.of<ProductsProvider>(context, listen: false).searchProducts(query);
   }
 
   @override
@@ -84,239 +79,290 @@ class _HomeScreenState extends State<HomeScreen> {
     return Consumer<ProductsProvider>(
       builder: (context, productsConsumer, _) {
         return Scaffold(
-          appBar: AppBar(
-            iconTheme: const IconThemeData(color: Colors.black87),
-            elevation: 0,
-            centerTitle: true,
-            backgroundColor: Colors.white,
-            title: Text(
-              'L E A F Y',
-              style: GoogleFonts.oswald(
-                fontSize: 24,
-                color: const Color.fromARGB(221, 44, 163, 58),
-                fontWeight: FontWeight.bold,
+            appBar: AppBar(
+              iconTheme: const IconThemeData(color: Colors.black87),
+              elevation: 0,
+              centerTitle: true,
+              backgroundColor: Colors.white,
+              title: Text(
+                'L E A F Y',
+                style: GoogleFonts.oswald(
+                  fontSize: 24,
+                  color: const Color.fromARGB(221, 44, 163, 58),
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
-          ),
-          body: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: TextField(
-                  controller: searchController,
-                  decoration: InputDecoration(
-                    hintText: 'Search for products...',
-                    prefixIcon: const Icon(Icons.search),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide.none,
-                    ),
-                    filled: true,
-                    fillColor: Colors.grey[200],
-                  ),
-                  onChanged: (query) {
-                    setState(() {
-                      searchProducts(query);
-                    });
-                  },
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 5.0),
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: [
-                      ...productTypes.map((type) {
-                        return FilterButton(
-                          label: type,
-                          isSelected: selectedProductType == type,
-                          onTap: () {
-                            setState(() {
-                              selectedProductType = type;
-                              if (type == 'All') {
-                                productsConsumer.getProducts();
-                              } else {
-                                productsConsumer.getProductsByType(type);
-                              }
-                            });
-                          },
-                        );
-                      }).toList(),
-                      IconButton(
-                        icon: const Icon(
-                          Icons.filter_list_alt,
-                          color: Colors.green,
-                        ),
-                        onPressed: () {
-                          selectedProductType = 'All';
-                          _showTagFilterDialog(productsConsumer);
-                        },
+            body: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: TextField(
+                    controller: searchController,
+                    decoration: InputDecoration(
+                      hintText: 'Search for products...',
+                      prefixIcon: const Icon(
+                        Icons.search,
+                        color: Colors.green,
                       ),
-                    ],
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide.none,
+                      ),
+                      filled: true,
+                      fillColor: Colors.grey[200],
+                    ),
+                    onChanged: (query) {
+                      setState(() {
+                        searchProducts(query);
+                      });
+                    },
                   ),
                 ),
-              ),
-              const SizedBox(height: 16.0),
-              Divider(
-                color: Colors.green.withOpacity(0.2),
-                height: 0,
-              ),
-              Expanded(
-                child: productsConsumer.isFailed
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.network_locked_sharp,
-                              color: Colors.green.withOpacity(0.6),
-                              size: size.width * 0.2,
-                            ),
-                            const Text(
-                              "Something went wrong!",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black54,
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 5.0),
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        ...productTypes.map((type) {
+                          return FilterButton(
+                            label: type,
+                            isSelected: selectedProductType == type,
+                            onTap: () {
+                              setState(() {
+                                selectedProductType = type;
+                                if (type == 'All') {
+                                  productsConsumer.getProducts();
+                                } else {
+                                  productsConsumer.getProductsByType(type);
+                                }
+                              });
+                            },
+                            onClearSearch: () {
+                              setState(() {
+                                searchController.clear();
+                              });
+                            },
+                          );
+                        }).toList(),
+                        IconButton(
+                          icon: const Icon(
+                            Icons.filter_list_alt,
+                            color: Colors.green,
+                          ),
+                          onPressed: () {
+                            selectedProductType = 'All';
+                            _showTagFilterDialog(productsConsumer);
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16.0),
+                Divider(
+                  color: Colors.green.withOpacity(0.2),
+                  height: 0,
+                ),
+                Expanded(
+                  child: productsConsumer.isFailed
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.network_locked_sharp,
+                                color: Colors.green.withOpacity(0.6),
+                                size: size.width * 0.2,
                               ),
-                            ),
-                          ],
-                        ),
-                      )
-                    : GridView.builder(
-                        padding: const EdgeInsets.all(24),
-                        shrinkWrap: true,
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          childAspectRatio: 0.7,
-                          crossAxisSpacing: 24,
-                          mainAxisSpacing: 24,
-                        ),
-                        itemCount: productsConsumer.isLoading
-                            ? 10
-                            : filteredProducts(productsConsumer).length,
-                        itemBuilder: (context, index) {
-                          return productsConsumer.isLoading
-                              ? const ShimmerWidget()
-                              : ProductCard(
+                              const Text(
+                                "Something went wrong!",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black54,
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : filteredProducts(productsConsumer).isEmpty
+                          ? ProductCard(
+                              message: 'No products found.',
+                            )
+                          : GridView.builder(
+                              padding: const EdgeInsets.all(24),
+                              shrinkWrap: true,
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              gridDelegate:
+                                  const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2,
+                                childAspectRatio: 0.7,
+                                crossAxisSpacing: 24,
+                                mainAxisSpacing: 24,
+                              ),
+                              itemCount:
+                                  filteredProducts(productsConsumer).length,
+                              itemBuilder: (context, index) {
+                                return ProductCard(
                                   product:
                                       filteredProducts(productsConsumer)[index],
                                 );
-                        },
-                      ),
-              ),
-            ],
-          ),
-          bottomNavigationBar: BottomAppBar(
-            shape: const CircularNotchedRectangle(),
-            notchMargin: 4.0,
-            child: Row(
-              mainAxisSize: MainAxisSize.max,
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: <Widget>[
-                IconButton(
-                  icon: Icon(Icons.shopping_cart,
-                      color: Colors.green.withOpacity(0.86)),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => CartScreen()),
-                    );
-                  },
-                ),
-                IconButton(
-                  icon: Icon(Icons.history,
-                      color: Colors.green.withOpacity(0.86)),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => HistoryScreen()),
-                    );
-                  },
-                ),
-                IconButton(
-                  icon: Icon(Icons.favorite,
-                      color: Colors.green.withOpacity(0.86)),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => FavScreen()),
-                    );
-                  },
-                ),
-                IconButton(
-                  icon: Icon(Icons.post_add,
-                      color: Colors.green.withOpacity(0.86)),
-                  onPressed: () {
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => PostsScreen()));
-                  },
+                              },
+                            ),
                 ),
               ],
             ),
-          ),
-          drawer: Drawer(
-            child: SafeArea(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  ListTile(
-                    title: const Text("Profile"),
-                    onTap: () {
+            bottomNavigationBar: BottomAppBar(
+              shape: const CircularNotchedRectangle(),
+              notchMargin: 4.0,
+              child: Row(
+                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: <Widget>[
+                  IconButton(
+                    icon: Icon(Icons.shopping_cart,
+                        color: Colors.green.withOpacity(0.86)),
+                    onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                          builder: (context) => const ProfileScreen(),
-                        ),
+                        MaterialPageRoute(builder: (context) => CartScreen()),
                       );
                     },
                   ),
-                  const Divider(),
-                  const ListTile(
-                    title: Text("Contact Us"),
-                  ),
-                  const Divider(),
-                  GestureDetector(
-                    onTap: () {
-                      Provider.of<AuthProvider>(context, listen: false)
-                          .logout()
-                          .then((loggedOut) {
-                        if (loggedOut) {
-                          Navigator.pushAndRemoveUntil(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const ScreenRouter(),
-                            ),
-                            (route) => false,
-                          );
-                        }
-                      });
+                  IconButton(
+                    icon: Icon(Icons.history,
+                        color: Colors.green.withOpacity(0.86)),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => HistoryScreen()),
+                      );
                     },
-                    child: const ListTile(
-                      title: Text("Logout"),
-                      trailing: Icon(Icons.exit_to_app),
-                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.favorite,
+                        color: Colors.green.withOpacity(0.86)),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => FavScreen()),
+                      );
+                    },
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.post_add,
+                        color: Colors.green.withOpacity(0.86)),
+                    onPressed: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => PostsScreen()));
+                    },
                   ),
                 ],
               ),
             ),
-          ),
-        );
+            drawer: Drawer(
+              child: SafeArea(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    ListTile(
+                      title: const Text("Profile"),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const ProfileScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                    const Divider(),
+                    const ListTile(
+                      title: Text("Contact Us"),
+                    ),
+                    const Divider(),
+                    GestureDetector(
+                      onTap: () {
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: Text("Confirm Logout",
+                                  style: GoogleFonts.oswald(
+                                      fontSize: 24,
+                                      color: const Color.fromARGB(
+                                          221, 44, 163, 58),
+                                      fontWeight: FontWeight.bold)),
+                              content: const Text(
+                                  "Are you sure you want to logout?"),
+                              actions: <Widget>[
+                                TextButton(
+                                  child: const Text(
+                                    "Cancel",
+                                    style: TextStyle(
+                                      color: const Color.fromARGB(
+                                          221, 44, 163, 58),
+                                    ),
+                                  ),
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                ),
+                                TextButton(
+                                  child: const Text(
+                                    "Logout",
+                                    style: TextStyle(
+                                      color: const Color.fromARGB(
+                                          221, 44, 163, 58),
+                                    ),
+                                  ),
+                                  onPressed: () {
+                                    Navigator.of(context)
+                                        .pop(); // Close the dialog
+                                    Provider.of<AuthProvider>(context,
+                                            listen: false)
+                                        .logout()
+                                        .then((loggedOut) {
+                                      if (loggedOut) {
+                                        Navigator.pushAndRemoveUntil(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                const ScreenRouter(),
+                                          ),
+                                          (route) => false,
+                                        );
+                                      }
+                                    });
+                                  },
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      },
+                      child: const ListTile(
+                        title: Text("Logout"),
+                        trailing: Icon(Icons.exit_to_app),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ));
       },
     );
   }
 
   List<ProductModel> filteredProducts(ProductsProvider productsConsumer) {
-    String query = searchController.text.toLowerCase();
     return productsConsumer.products.where((product) {
-      bool matchesQuery = product.name.toLowerCase().contains(query);
-      bool matchesType = selectedProductType == 'All' ||
-          selectedProductType.isEmpty ||
+      return selectedProductType == 'All' ||
           product.productType == selectedProductType;
-      return matchesQuery && matchesType;
     }).toList();
   }
 
@@ -377,7 +423,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 TextButton(
                   onPressed: () {
                     Navigator.of(context).pop(); // Apply and close dialog
-                    productsConsumer.filterProductsByTags(selectedTags);
+                    if (selectedTags.isEmpty) {
+                      productsConsumer
+                          .getProducts(); // Fetch all products if no tags are selected
+                    } else {
+                      productsConsumer.filterProductsByTags(
+                          selectedTags); // Filter by selected tags
+                    }
                   },
                   child: const Text('Apply',
                       style:
@@ -396,18 +448,26 @@ class FilterButton extends StatelessWidget {
   final String label;
   final bool isSelected;
   final VoidCallback onTap;
+  final VoidCallback? onClearSearch;
 
   const FilterButton({
     required this.label,
     required this.isSelected,
     required this.onTap,
+    required this.onClearSearch,
     Key? key,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        // Clear search input when a product type filter is selected
+        if (onClearSearch != null) {
+          onClearSearch!();
+        }
+        onTap();
+      },
       child: Container(
         margin: const EdgeInsets.all(4.0),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),

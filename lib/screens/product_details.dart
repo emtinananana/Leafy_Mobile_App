@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
@@ -33,7 +32,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        iconTheme: IconThemeData(color: Colors.black87),
+        iconTheme: const IconThemeData(color: Colors.black87),
         elevation: 0,
         centerTitle: true,
         backgroundColor: Colors.white,
@@ -41,13 +40,13 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
           'L E A F Y',
           style: GoogleFonts.oswald(
             fontSize: 24,
-            color: Color.fromARGB(221, 44, 163, 58),
+            color: const Color.fromARGB(221, 44, 163, 58),
             fontWeight: FontWeight.bold,
           ),
         ),
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -61,7 +60,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                 fit: BoxFit.contain,
               ),
             ),
-            SizedBox(height: 16.0),
+            const SizedBox(height: 16.0),
             // Thumbnails
             SizedBox(
               height: 70,
@@ -76,7 +75,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                       });
                     },
                     child: Container(
-                      margin: EdgeInsets.only(right: 8.0),
+                      margin: const EdgeInsets.only(right: 8.0),
                       decoration: BoxDecoration(
                         border: Border.all(
                           color: _selectedImageIndex == index
@@ -100,7 +99,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                 },
               ),
             ),
-            SizedBox(height: 16.0),
+            const SizedBox(height: 16.0),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -124,14 +123,17 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                     final message = isLiked
                         ? 'Product unliked successfully!'
                         : 'Product liked successfully!';
-                    final snackBar = SnackBar(content: Text(message));
+                    final snackBar = SnackBar(
+                      content: Text(message),
+                      backgroundColor: Colors.green,
+                    );
                     ScaffoldMessenger.of(context).showSnackBar(snackBar);
                   },
                 ),
               ],
             ),
 
-            SizedBox(height: 8.0),
+            const SizedBox(height: 18.0),
             Text(
               '\$${widget.product.price}',
               style: GoogleFonts.roboto(
@@ -140,72 +142,122 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            SizedBox(height: 16.0),
+            const SizedBox(height: 18.0),
             Row(
               children: [
-                Text('Product Type  ',
+                const Text('Product Type  ',
                     style:
                         TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 Text(
                   widget.product.productType,
-                  style: TextStyle(
-                    fontSize: 16,
+                  style: const TextStyle(
+                    fontSize: 18,
                     color: Colors.black54,
                   ),
                 ),
               ],
             ),
 
-            SizedBox(height: 16.0),
+            const SizedBox(height: 18.0),
             Row(
               children: [
-                Text('Tags   ',
+                const Text('Tags  ',
                     style:
                         TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 Text(
                   widget.product.tags.map((tag) => tag.name).join(', '),
-                  style: TextStyle(fontSize: 16, color: Colors.black54),
+                  style: const TextStyle(fontSize: 18, color: Colors.black54),
                 ),
               ],
             ),
-            SizedBox(height: 16.0),
-            Text(
+            const SizedBox(height: 18.0),
+            const Text(
               'Description ',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 16.0),
+            const SizedBox(height: 18.0),
             Text(
               widget.product.description,
-              style: TextStyle(fontSize: 16, color: Colors.black54),
+              style: const TextStyle(fontSize: 18, color: Colors.black54),
             ),
             if (widget.product.plantInstructions != null) ...[
-              SizedBox(height: 16.0),
-              Text(
+              const SizedBox(height: 18.0),
+              const Text(
                 'Plant Instructions ',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
-              ...widget.product.plantInstructions!.map((instruction) => Padding(
-                    padding: const EdgeInsets.only(top: 4.0),
-                    child: Text(
-                      instruction.instruction,
-                      style: TextStyle(fontSize: 16, color: Colors.black54),
-                    ),
-                  )),
+              const SizedBox(height: 16.0),
+              ...widget.product.plantInstructions!.map((instruction) {
+                Widget instructionText = Text(
+                  instruction.instruction,
+                  style: const TextStyle(fontSize: 18, color: Colors.black54),
+                );
+
+                if (instruction.instruction.contains('Water')) {
+                  instructionText = Column(
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.water_drop,
+                              size: 24,
+                              color: Color.fromARGB(255, 144, 205, 255)),
+                          SizedBox(width: 8),
+                          instructionText,
+                        ],
+                      ),
+                      SizedBox(height: 13),
+                    ],
+                  );
+                } else if (instruction.instruction.contains('sun')) {
+                  instructionText = Column(
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.wb_sunny, size: 24, color: Colors.orange),
+                          SizedBox(width: 8),
+                          instructionText,
+                        ],
+                      ),
+                      SizedBox(height: 13),
+                    ],
+                  );
+                } else if (instruction.instruction.contains('Pet')) {
+                  instructionText = Column(
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.pets,
+                              size: 24,
+                              color: const Color.fromARGB(255, 133, 198, 135)),
+                          SizedBox(width: 8),
+                          instructionText,
+                        ],
+                      ),
+                      SizedBox(height: 13),
+                    ],
+                  );
+                }
+
+                return Padding(
+                  padding: const EdgeInsets.only(top: 4.0),
+                  child: instructionText,
+                );
+              }),
             ],
-            SizedBox(height: 16.0),
+            const SizedBox(height: 30.0),
             if (widget.product.quantity <= 1)
-              Center(
+              const Center(
                 child: Text(
                   'Out of Stock',
                   style: TextStyle(fontSize: 18, color: Colors.red),
                 ),
               ),
-            SizedBox(height: 16.0),
+            const SizedBox(height: 16.0),
           ],
         ),
       ),
       bottomNavigationBar: Padding(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: ElevatedButton(
           onPressed: widget.product.quantity > 1
               ? () {
@@ -217,10 +269,10 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                 widget.product.quantity > 1 ? Colors.white : Colors.black38,
             backgroundColor:
                 widget.product.quantity > 1 ? Colors.green : Colors.grey,
-            padding: EdgeInsets.symmetric(vertical: 16.0),
-            textStyle: TextStyle(fontSize: 18),
+            padding: const EdgeInsets.symmetric(vertical: 16.0),
+            textStyle: const TextStyle(fontSize: 18),
           ),
-          child: Text('Add to Cart'),
+          child: const Text('Add to Cart'),
         ),
       ),
     );
@@ -237,7 +289,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                 'Add to Cart',
                 style: GoogleFonts.oswald(
                   fontSize: 24,
-                  color: Color.fromARGB(221, 44, 163, 58),
+                  color: const Color.fromARGB(221, 44, 163, 58),
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -247,8 +299,8 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   children: [
                     Row(
                       children: [
-                        Text('Quantity'),
-                        SizedBox(width: 130),
+                        const Text('Quantity'),
+                        const SizedBox(width: 130),
                         DropdownButton<int>(
                           value: _quantity,
                           items: List.generate(5, (index) => index + 1)
@@ -265,11 +317,11 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                         ),
                       ],
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Is this a gift?'),
+                        const Text('Is this a gift?'),
                         Checkbox(
                           value: _isGift,
                           onChanged: (value) {
@@ -284,12 +336,12 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          SizedBox(height: 10),
-                          Text('Select pot type:'),
-                          SizedBox(height: 8.0),
+                          const SizedBox(height: 10),
+                          const Text('Select pot type:'),
+                          const SizedBox(height: 8.0),
                           DropdownButton<String>(
                             value: _selectedPotType,
-                            hint: Text('Select pot type'),
+                            hint: const Text('Select pot type'),
                             items: ['Plastic', 'Ceramic', 'Glass']
                                 .map((type) => DropdownMenuItem(
                                       value: type,
@@ -312,7 +364,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   onPressed: () {
                     Navigator.pop(context);
                   },
-                  child: Text('Cancel'),
+                  child: const Text('Cancel'),
                 ),
                 ElevatedButton(
                   onPressed: () async {
@@ -321,11 +373,11 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   },
                   style: ElevatedButton.styleFrom(
                     foregroundColor: Colors.white,
-                    backgroundColor: Color.fromARGB(221, 44, 163, 58),
-                    padding: EdgeInsets.symmetric(vertical: 8.0),
-                    textStyle: TextStyle(fontSize: 18),
+                    backgroundColor: const Color.fromARGB(221, 44, 163, 58),
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    textStyle: const TextStyle(fontSize: 18),
                   ),
-                  child: Text('Add'),
+                  child: const Text('Add'),
                 ),
               ],
             );
@@ -363,7 +415,43 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
     );
 
     if (response.statusCode == 200) {
-      // Handle success
+      Navigator.of(context).pop();
+      await showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text('Added To Cart Successfully',
+                  style: GoogleFonts.oswald(
+                      fontSize: 24,
+                      color: const Color.fromARGB(221, 44, 163, 58),
+                      fontWeight: FontWeight.bold)),
+              content: const SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Please check your cart for details.',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Color.fromARGB(221, 0, 0, 0),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              actions: <Widget>[
+                TextButton(
+                  child: const Text('OK',
+                      style:
+                          TextStyle(color: Color.fromARGB(221, 44, 163, 58))),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            );
+          });
     } else {
       // Handle error
     }

@@ -1,17 +1,21 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:leafy_mobile_app/providers/postprovider.dart';
+import 'package:leafy_mobile_app/providers/products_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
 class AuthProvider with ChangeNotifier {
   late User _user = User(id: 0, name: '', email: '', phone: '', address: '');
+  ProductsProvider productsProvider;
+  PostProvider postsProvider;
+
+  AuthProvider(this.productsProvider, this.postsProvider);
+
   User get user => _user;
 
-  get likedPostIds => null;
-
-  Future<bool> login(Map loginBody, BuildContext context) async {
+  Future<bool> login(
+      Map<String, dynamic> loginBody, BuildContext context) async {
     bool isLoggedIn = false;
 
     final response = await http.post(
@@ -43,22 +47,30 @@ class AuthProvider with ChangeNotifier {
         );
         SharedPreferences prefs = await SharedPreferences.getInstance();
         prefs.setString("token", responseBody['token']);
-
-        // Show success message
       } catch (e) {
         debugPrint("Error decoding JSON: $e");
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text("Login Failed: Invalid response format")));
+          content: Text("Login Failed: Invalid response format"),
+        ));
+        isLoggedIn = false;
       }
     } else {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text("Login Failed")));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text("Login Failed"),
+      ));
+      isLoggedIn = false;
+    }
+
+    if (isLoggedIn) {
+      await productsProvider.fetchLikedProducts();
+      await postsProvider.fetchLikedPosts();
     }
 
     return isLoggedIn;
   }
 
-  Future<bool> register(Map registerBody, BuildContext context) async {
+  Future<bool> register(
+      Map<String, dynamic> registerBody, BuildContext context) async {
     final response = await http.post(
       Uri.parse("http://127.0.0.1:8000/api/customer/register"),
       body: registerBody,
@@ -76,7 +88,6 @@ class AuthProvider with ChangeNotifier {
         SharedPreferences prefs = await SharedPreferences.getInstance();
         prefs.setString("token", responseBody['token']);
 
-        // Show success message
         showDialog(
           context: context,
           builder: (BuildContext context) {
@@ -93,19 +104,18 @@ class AuthProvider with ChangeNotifier {
         return true;
       } catch (e) {
         debugPrint("Error parsing response: $e");
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text("Registration failed: Error parsing response")),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text("Registration failed: Error parsing response"),
+        ));
         return false;
       }
     } else {
       final errorMessage =
           response.body.isNotEmpty ? response.body : "Unknown error occurred";
       debugPrint("Error message: $errorMessage");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Registration failed: $errorMessage")),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text("Registration failed: $errorMessage"),
+      ));
       return false;
     }
   }
@@ -115,6 +125,11 @@ class AuthProvider with ChangeNotifier {
 
     prefs.remove('token');
     _user = User(id: 0, name: '', email: '', phone: '', address: '');
+    await productsProvider.clearLikedProducts();
+    // await prefs.remove(
+    //     'liked_post_ids');
+    await postsProvider
+        .clearLikedPosts(); // Ensure this matches where liked post ids are stored
     return true;
   }
 

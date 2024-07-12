@@ -244,6 +244,41 @@ class _CartScreenState extends State<CartScreen> {
     } else {
       await cartProvider.checkout();
     }
+    await showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Order Placed Successfully',
+                style: GoogleFonts.oswald(
+                    fontSize: 24,
+                    color: const Color.fromARGB(221, 44, 163, 58),
+                    fontWeight: FontWeight.bold)),
+            content: const SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Please check your order history for details.',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Color.fromARGB(221, 0, 0, 0),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            actions: <Widget>[
+              TextButton(
+                child: const Text('OK',
+                    style: TextStyle(color: Color.fromARGB(221, 44, 163, 58))),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        });
   }
 
   @override

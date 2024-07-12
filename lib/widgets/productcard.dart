@@ -4,24 +4,40 @@ import 'package:leafy_mobile_app/models/products_model.dart';
 import 'package:leafy_mobile_app/screens/product_details.dart';
 
 class ProductCard extends StatelessWidget {
-  final ProductModel product;
+  final ProductModel? product;
+  final String? message;
 
-  const ProductCard({Key? key, required this.product}) : super(key: key);
+  const ProductCard({Key? key, this.product, this.message}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    if (product == null && message != null) {
+      return Center(
+        child: Text(
+          message!,
+          style: GoogleFonts.montserrat(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.grey,
+          ),
+        ),
+      );
+    }
+
     return GestureDetector(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ProductDetailsScreen(product: product),
-          ),
-        );
+        if (product != null) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ProductDetailsScreen(product: product!),
+            ),
+          );
+        }
       },
       child: Container(
-        height: 400,
-        width: 900,
+        height: 400, // Adjust as needed for your layout
+        width: 900, // Adjust as needed for your layout
         child: Card(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
@@ -31,19 +47,33 @@ class ProductCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // Product image
-              Flexible(
-                flex: 3,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(16),
-                    topRight: Radius.circular(16),
-                  ),
-                  child: Image.network(
-                    product.firstImage,
-                    fit: BoxFit.cover,
+              if (product != null)
+                Flexible(
+                  flex: 3,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(16),
+                      topRight: Radius.circular(16),
+                    ),
+                    child: Image.network(
+                      product!.firstImage,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          color: Colors.grey[300],
+                          height: 200, // Placeholder height
+                          child: Center(
+                            child: Icon(
+                              Icons.error,
+                              color: Colors.red,
+                              size: 40,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                   ),
                 ),
-              ),
               Flexible(
                 flex: 2,
                 child: Padding(
@@ -52,44 +82,47 @@ class ProductCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Product name
-                      Text(
-                        product.name,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.montserrat(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                      if (product != null)
+                        Text(
+                          product!.name,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.montserrat(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
                       const SizedBox(height: 7),
                       // Product price
-                      Text(
-                        '\$${product.price.toStringAsFixed(2)}', // Format price with two decimal places
-                        style: GoogleFonts.roboto(
-                          fontSize: 16,
-                          color: Colors.green,
-                          fontWeight: FontWeight.bold,
+                      if (product != null)
+                        Text(
+                          '\$${product!.price.toStringAsFixed(2)}', // Format price with two decimal places
+                          style: GoogleFonts.roboto(
+                            fontSize: 16,
+                            color: Colors.green,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
                       const SizedBox(height: 8),
                       // Like count
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.favorite,
-                            size: 16,
-                            color: Colors.grey,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            '${product.likeCount}',
-                            style: TextStyle(
-                              fontSize: 14,
+                      if (product != null)
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.favorite,
+                              size: 16,
                               color: Colors.grey,
                             ),
-                          ),
-                        ],
-                      ),
+                            const SizedBox(width: 4),
+                            Text(
+                              '${product!.likeCount}',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ],
+                        ),
                     ],
                   ),
                 ),

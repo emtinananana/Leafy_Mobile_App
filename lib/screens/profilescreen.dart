@@ -153,11 +153,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
         authProvider.updateAvatar(jsonResponse['customer']['avatar']);
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Avatar updated successfully')),
+          const SnackBar(
+            content: Text('Avatar updated successfully'),
+            backgroundColor: Colors.green,
+          ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to update avatar')),
+          const SnackBar(
+            content: Text('Failed to update avatar'),
+            backgroundColor: Colors.green,
+          ),
         );
       }
     } catch (e) {
@@ -261,7 +267,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 );
                 Navigator.of(context).pop();
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Profile updated')),
+                  const SnackBar(
+                    content: Text('Profile updated'),
+                    backgroundColor: Colors.green,
+                  ),
                 );
               },
               child: const Text('Save'),

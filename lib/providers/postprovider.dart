@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class PostProvider extends ChangeNotifier {
   List<PostModel> _posts = [];
+  List<PostModel> _likedPosts = []; // Initialize as an empty list
   Set<int> _likedPostIds = {}; // Set to store liked post IDs
 
   List<PostModel> get posts => _posts;
@@ -34,29 +35,42 @@ class PostProvider extends ChangeNotifier {
     }
   }
 
-  Future<List<PostModel>> fetchLikedPosts() async {
+  Future<void> fetchLikedPosts() async {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String? token = prefs.getString("token");
 
       final response = await http.get(
-        Uri.parse('http://127.0.0.1:8000/api/customer/likedposts'),
-        headers: {'Authorization': 'Bearer $token'},
+        Uri.parse("http://127.0.0.1:8000/api/customer/likedposts"),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
       );
 
       if (response.statusCode == 200) {
-        List<dynamic> data = jsonDecode(response.body)['liked_posts'];
-        _likedPostIds =
-            data.map<int>((json) => PostModel.fromJson(json).id).toSet();
+        final responseBody = json.decode(response.body);
+
+        // Check if liked_posts is null
+        if (responseBody['liked_posts'] != null) {
+          _likedPosts = (responseBody['liked_posts'] as List)
+              .map((post) => PostModel.fromJson(post))
+              .toList();
+          // Extract post IDs and update _likedPostIds
+          _likedPostIds = _likedPosts.map((post) => post.id).toSet();
+        } else {
+          _likedPosts = []; // Set to an empty list if liked_posts is null
+          _likedPostIds = {};
+        }
+
         notifyListeners();
-        return data.map((json) => PostModel.fromJson(json)).toList();
       } else {
-        throw Exception('Failed to fetch liked posts');
+        debugPrint("Error fetching liked posts: ${response.body}");
+        throw Exception("Failed to fetch liked posts");
       }
     } catch (e) {
-      print('Error fetching liked posts: $e');
-      // Handle error appropriately, e.g., show error message
-      throw e; // Optionally rethrow to propagate the error
+      debugPrint("Error fetching liked posts: $e");
+      throw Exception("Failed to fetch liked posts");
     }
   }
 
@@ -204,5 +218,11 @@ class PostProvider extends ChangeNotifier {
     } else {
       throw Exception('Failed to delete post');
     }
+  }
+
+  Future<void> clearLikedPosts() async {
+    _likedPosts = [];
+    _likedPostIds = {};
+    notifyListeners();
   }
 }

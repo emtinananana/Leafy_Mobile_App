@@ -25,33 +25,40 @@ class FavScreen extends StatelessWidget {
       ),
       body: likedProducts.isEmpty
           ? const Center(
-              child: Text('No favorites yet.'),
+              child: Text(
+                'No favorites yet.',
+                style: TextStyle(fontSize: 18),
+              ),
             )
-          : ListView.builder(
-              itemCount: likedProducts.length,
-              itemBuilder: (ctx, index) {
-                final product = likedProducts[index];
-                return SingleChildScrollView(
-                  padding: const EdgeInsets.all(8.0),
-                  child: ListTile(
-                    leading: Image.network(
-                      product.firstImage,
-                      fit: BoxFit.cover,
-                    ),
-                    title: Text(product.name),
-                    subtitle: Text('Price: \$${product.price}'),
-                    trailing: IconButton(
-                      icon: const Icon(
-                        Icons.favorite,
-                        color: Colors.red,
+          : Padding(
+              padding: const EdgeInsets.only(top: 20.0),
+              child: ListView.builder(
+                itemCount: likedProducts.length,
+                itemBuilder: (ctx, index) {
+                  final product = likedProducts[index];
+
+                  return SingleChildScrollView(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ListTile(
+                      leading: Image.network(
+                        product.firstImage,
+                        fit: BoxFit.cover,
                       ),
-                      onPressed: () {
-                        productsProvider.unlikeProduct(product.id);
-                      },
+                      title: Text(product.name),
+                      subtitle: Text('Price: \$${product.price}'),
+                      trailing: IconButton(
+                        icon: const Icon(
+                          Icons.favorite,
+                          color: Colors.red,
+                        ),
+                        onPressed: () {
+                          productsProvider.unlikeProduct(product.id);
+                        },
+                      ),
                     ),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
     );
   }

@@ -159,12 +159,18 @@ class ProductsProvider with ChangeNotifier {
     );
 
     if (response.statusCode == 200) {
-      final List<dynamic> likedProductsJson =
+      final List<dynamic>? likedProductsJson =
           json.decode(response.body)['liked_products'];
-      _likedProducts =
-          likedProductsJson.map((json) => ProductModel.fromJson(json)).toList();
-      _likedProductIds =
-          likedProductsJson.map((product) => product['id'] as int).toList();
+      if (likedProductsJson != null) {
+        _likedProducts = likedProductsJson
+            .map((json) => ProductModel.fromJson(json))
+            .toList();
+        _likedProductIds =
+            likedProductsJson.map((product) => product['id'] as int).toList();
+      } else {
+        _likedProducts = [];
+        _likedProductIds = [];
+      }
       notifyListeners();
     }
   }
@@ -218,7 +224,6 @@ class ProductsProvider with ChangeNotifier {
         _likedProducts.removeWhere((product) => product.id == productId);
       } else {
         _likedProductIds.add(productId);
-        // fetch the product details and add to _likedProducts
         final productResponse = await http.get(
           Uri.parse("http://127.0.0.1:8000/api/customer/products/$productId"),
           headers: {
@@ -241,5 +246,41 @@ class ProductsProvider with ChangeNotifier {
     }
     await fetchLikedProducts();
     await getProducts();
+  }
+
+  Future<void> clearLikedProducts() async {
+    _likedProducts = [];
+    _likedProductIds = [];
+    notifyListeners();
+  }
+
+  Future<void> searchProducts(String query) async {
+    setLoading(true); // Set loading state to true
+    try {
+      final response = await http.post(
+        Uri.parse("http://127.0.0.1:8000/api/catalog/search"),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'name': query}),
+      );
+
+      if (response.statusCode == 200) {
+        // Successful response, parse the products
+        final List<dynamic> decodedData =
+            json.decode(response.body)['products'];
+        _products = decodedData
+            .map((productJson) => ProductModel.fromJson(productJson))
+            .toList();
+        setFailed(false); // Reset failed state
+      } else {
+        // Handle unsuccessful response
+        setFailed(true);
+      }
+    } catch (error) {
+      // Handle network or decoding errors
+      setFailed(true);
+    } finally {
+      setLoading(false); // Set loading state to false after operation completes
+      notifyListeners(); // Notify listeners to update UI
+    }
   }
 }

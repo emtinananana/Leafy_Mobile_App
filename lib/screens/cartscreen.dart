@@ -3,6 +3,19 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:leafy_mobile_app/providers/cartprovider.dart';
 import 'package:provider/provider.dart';
 
+import 'package:flutter_svg/flutter_svg.dart';
+
+class GiftIconWidget extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return SvgPicture.asset(
+      'assets/gift.svg',
+      height: 24.0,
+      width: 24.0,
+    );
+  }
+}
+
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
 
@@ -330,15 +343,16 @@ class _CartScreenState extends State<CartScreen> {
                               height: 60,
                               fit: BoxFit.contain,
                             ),
-                            title: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                            title: Row(
                               children: [
-                                const SizedBox(height: 11),
                                 Text(
                                   product['name'],
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold),
+                                  style: GoogleFonts.oswald(
+                                    fontSize: 20,
+                                  ),
                                 ),
+                                const SizedBox(width: 13),
+                                if (cartItem['is_gift']) GiftIconWidget(),
                               ],
                             ),
                             subtitle: Column(
@@ -352,10 +366,7 @@ class _CartScreenState extends State<CartScreen> {
                                 if (cartItem['pot_type'] != null) ...[
                                   Text('Pot Type: ${cartItem['pot_type']}'),
                                 ],
-                                if (isGift) ...[
-                                  const Text(' A Gift'),
-                                  const SizedBox(height: 11),
-                                ],
+                                const SizedBox(height: 11),
                               ],
                             ),
                             trailing: IconButton(

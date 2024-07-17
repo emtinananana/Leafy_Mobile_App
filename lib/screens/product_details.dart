@@ -198,14 +198,14 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                     children: [
                       Row(
                         children: [
-                          Icon(Icons.water_drop,
+                          const Icon(Icons.water_drop,
                               size: 24,
                               color: Color.fromARGB(255, 144, 205, 255)),
-                          SizedBox(width: 8),
+                          const SizedBox(width: 8),
                           instructionText,
                         ],
                       ),
-                      SizedBox(height: 13),
+                      const SizedBox(height: 13),
                     ],
                   );
                 } else if (instruction.instruction.contains('sun')) {
@@ -213,12 +213,13 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                     children: [
                       Row(
                         children: [
-                          Icon(Icons.wb_sunny, size: 24, color: Colors.orange),
-                          SizedBox(width: 8),
+                          const Icon(Icons.wb_sunny,
+                              size: 24, color: Colors.orange),
+                          const SizedBox(width: 8),
                           instructionText,
                         ],
                       ),
-                      SizedBox(height: 13),
+                      const SizedBox(height: 13),
                     ],
                   );
                 } else if (instruction.instruction.contains('Pet')) {
@@ -226,14 +227,14 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                     children: [
                       Row(
                         children: [
-                          Icon(Icons.pets,
+                          const Icon(Icons.pets,
                               size: 24,
-                              color: const Color.fromARGB(255, 133, 198, 135)),
-                          SizedBox(width: 8),
+                              color: Color.fromARGB(255, 133, 198, 135)),
+                          const SizedBox(width: 8),
                           instructionText,
                         ],
                       ),
-                      SizedBox(height: 13),
+                      const SizedBox(height: 13),
                     ],
                   );
                 }
@@ -364,10 +365,26 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   onPressed: () {
                     Navigator.pop(context);
                   },
-                  child: const Text('Cancel'),
+                  child: const Text(
+                    'Cancel',
+                    style: TextStyle(color: Colors.black),
+                  ),
+                ),
+                const SizedBox(
+                  width: 18,
                 ),
                 ElevatedButton(
                   onPressed: () async {
+                    if (widget.product.productType == 'Plant' &&
+                        _selectedPotType == null) {
+                      // Show a message if pot type is required but not selected
+                      const snackBar = SnackBar(
+                        content: Text('Please select a pot type.'),
+                        backgroundColor: Colors.red,
+                      );
+                      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                      return;
+                    }
                     await _addToCart();
                     Navigator.pop(context);
                   },

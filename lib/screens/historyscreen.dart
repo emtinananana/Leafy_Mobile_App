@@ -40,6 +40,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
               id: orderProductData['id'],
               name: orderProductData['product']['name'],
               quantity: orderProductData['quantity'],
+              pot_type: orderProductData['pot_type'],
               productType: orderProductData['product']['product_type'],
               price: double.parse(orderProductData['product']['price']),
               giftDetails: orderProductData['gift_details'] != null
@@ -112,10 +113,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       ),
                     ),
                     subtitle: Padding(
-                      padding: const EdgeInsets.all(8.0),
+                      padding: const EdgeInsets.only(top: 8.0),
                       child: Text(
                         'Total: ${order.total}',
                         style: const TextStyle(
+                          fontSize: 16,
                           color:
                               Color.fromARGB(221, 44, 163, 58), // Green color
                           fontWeight: FontWeight.bold,
@@ -124,9 +126,29 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     ),
                     children: [
                       ListTile(
-                        title: Text('Order Date: ${order.orderDate}'),
+                        title: Text(
+                          'Order Date: ${order.orderDate}',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                         subtitle: order.deliveryDate != null
-                            ? Text('Delivery Date: ${order.deliveryDate}')
+                            ? Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  SizedBox(
+                                    height: 10,
+                                  ),
+                                  Text(
+                                    'Delivery Date: ${order.deliveryDate}',
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              )
                             : null,
                       ),
                       const SizedBox(height: 8), // Additional spacing
@@ -140,7 +162,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               ListTile(
-                                title: Text(orderProduct.name),
+                                title: Text(
+                                  orderProduct.name,
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
                                 subtitle: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -152,31 +177,51 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                     Text(
                                       'Price: \$${orderProduct.price.toStringAsFixed(2)}',
                                     ),
+                                    if (orderProduct.pot_type != null &&
+                                        orderProduct.pot_type!.isNotEmpty) ...[
+                                      const SizedBox(
+                                          height: 8), // Additional spacing
+                                      Text(
+                                        'Pot Type: ${orderProduct.pot_type!}',
+                                      ),
+                                    ],
                                     if (orderProduct.giftDetails != null) ...[
                                       const SizedBox(
                                           height: 8), // Additional spacing
                                       const Divider(),
-                                      const Text('Gift Details:'),
-                                      const SizedBox(
-                                          height: 8), // Additional spacing
-                                      Text(
-                                        'Recipient Name: ${orderProduct.giftDetails!.recipientName}',
-                                      ),
-                                      const SizedBox(
-                                          height: 8), // Additional spacing
-                                      Text(
-                                        'Recipient Phone: ${orderProduct.giftDetails!.recipientPhone}',
-                                      ),
-                                      const SizedBox(
-                                          height: 8), // Additional spacing
-                                      Text(
-                                        'Recipient Address: ${orderProduct.giftDetails!.recipientAddress}',
-                                      ),
-                                      const SizedBox(
-                                          height: 8), // Additional spacing
-                                      Text(
-                                        'Note: ${orderProduct.giftDetails!.note}',
-                                      ),
+                                      const Text('Gift Details:',
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black)),
+                                      if (orderProduct.giftDetails != null) ...[
+                                        const SizedBox(
+                                            height: 8), // Additional spacing
+                                        const Divider(),
+                                        const Text('Gift Details:',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black)),
+                                        const SizedBox(
+                                            height: 8), // Additional spacing
+                                        Text(
+                                          'Recipient Name: ${orderProduct.giftDetails!.recipientName}',
+                                        ),
+                                        const SizedBox(
+                                            height: 8), // Additional spacing
+                                        Text(
+                                          'Recipient Phone: ${orderProduct.giftDetails!.recipientPhone}',
+                                        ),
+                                        const SizedBox(
+                                            height: 8), // Additional spacing
+                                        Text(
+                                          'Recipient Address: ${orderProduct.giftDetails!.recipientAddress}',
+                                        ),
+                                        const SizedBox(
+                                            height: 8), // Additional spacing
+                                        Text(
+                                          'Note: ${orderProduct.giftDetails!.note}',
+                                        ),
+                                      ],
                                     ],
                                   ],
                                 ),

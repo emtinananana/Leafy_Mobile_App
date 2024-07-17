@@ -19,19 +19,20 @@ class Order {
 class OrderProduct {
   final int id;
   final String name;
+  final String? pot_type;
   final int quantity;
   final String productType;
   final double price;
   final GiftDetails? giftDetails;
 
-  OrderProduct({
-    required this.id,
-    required this.name,
-    required this.quantity,
-    required this.productType,
-    required this.price,
-    this.giftDetails,
-  });
+  OrderProduct(
+      {required this.id,
+      required this.name,
+      required this.quantity,
+      required this.productType,
+      required this.price,
+      this.giftDetails,
+      this.pot_type});
 }
 
 class GiftDetails {

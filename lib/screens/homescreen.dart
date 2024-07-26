@@ -106,6 +106,15 @@ class _HomeScreenState extends State<HomeScreen> {
                         Icons.search,
                         color: Colors.green,
                       ),
+                      suffixIcon: IconButton(
+                        icon: const Icon(Icons.clear,
+                            color: Color.fromARGB(221, 44, 163, 58)),
+                        onPressed: () {
+                          setState(() {
+                            searchProducts('');
+                          });
+                        },
+                      ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                         borderSide: BorderSide.none,

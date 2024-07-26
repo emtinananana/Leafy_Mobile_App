@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:leafy_mobile_app/providers/authprovider.dart';
 import 'package:leafy_mobile_app/screens/homescreen.dart';
 import 'package:leafy_mobile_app/screens/loginscreen.dart';
@@ -42,11 +43,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
             'assets/leafyleafyh.jpg',
             fit: BoxFit.cover,
           ),
-          // Transparent container overlay with sign-up form
+
           Center(
             child: Container(
-              width: MediaQuery.of(context).size.width *
-                  0.90, // Adjust width as needed
+              width: MediaQuery.of(context).size.width * 0.94,
               decoration: BoxDecoration(
                 color:
                     Colors.black.withOpacity(0.14), // Adjust opacity as needed
@@ -271,37 +271,33 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                       const SizedBox(height: 20),
                       ElevatedButton(
-                        onPressed: () {
-                          Provider.of<AuthProvider>(context, listen: false)
-                              .register(
-                            {
-                              "name": nameController.text,
-                              "email": emailController.text,
-                              "phone": phoneController.text,
-                              "address": addressController.text,
-                              "password": passwordController.text
-                            },
-                            context,
-                          ).then((registrationSuccessful) {
-                            if (registrationSuccessful) {
-                              Navigator.pushAndRemoveUntil(
+                          onPressed: () {
+                            if (registerform.currentState!.validate()) {
+                              Provider.of<AuthProvider>(context, listen: false)
+                                  .register(
+                                {
+                                  "name": nameController.text,
+                                  "email": emailController.text,
+                                  "phone": phoneController.text,
+                                  "address": addressController.text,
+                                  "password": passwordController.text
+                                },
                                 context,
-                                CupertinoPageRoute(
-                                    builder: (context) => const HomeScreen()),
-                                (route) => false,
-                              );
+                              ).then((registrationSuccessful) {
+                                if (registrationSuccessful) {
+                                  _showSuccessDialog(context);
+                                }
+                              });
                             }
-                          });
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              const Color.fromARGB(89, 149, 180, 158),
-                          minimumSize: const Size(114, 40),
-                        ),
-                        child: const Text('Register',
-                            style:
-                                TextStyle(color: Colors.white, fontSize: 17)),
-                      ),
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor:
+                                const Color.fromARGB(89, 149, 180, 158),
+                            minimumSize: const Size(114, 40),
+                          ),
+                          child: const Text('Sign Up',
+                              style: TextStyle(
+                                  color: Colors.white, fontSize: 17))),
                     ],
                   ),
                 ),
@@ -311,5 +307,38 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ],
       ),
     );
+  }
+
+  void _showSuccessDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
+          title: Image.asset(
+            'assets/plant.png',
+            height: 20,
+          ),
+          content: Text(
+            "Registeration successful",
+            textAlign: TextAlign.center,
+            style: GoogleFonts.oswald(
+              fontSize: 20,
+              color: Colors.black,
+            ),
+          ),
+        );
+      },
+    );
+
+    Future.delayed(const Duration(seconds: 3), () {
+      Navigator.pop(context); // Close the dialog
+      Navigator.pushReplacement(
+        context,
+        CupertinoPageRoute(builder: (context) => const HomeScreen()),
+      );
+    });
   }
 }

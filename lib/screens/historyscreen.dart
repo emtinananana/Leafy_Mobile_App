@@ -115,7 +115,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     subtitle: Padding(
                       padding: const EdgeInsets.only(top: 8.0),
                       child: Text(
-                        'Total: ${order.total}',
+                        'Total: ${order.total.toStringAsFixed(2)}',
                         style: const TextStyle(
                           fontSize: 16,
                           color:
@@ -177,6 +177,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                     Text(
                                       'Price: \$${orderProduct.price.toStringAsFixed(2)}',
                                     ),
+                                    if (orderProduct.pot_type == null) ...[
+                                      const SizedBox(height: 8),
+                                    ],
                                     if (orderProduct.pot_type != null &&
                                         orderProduct.pot_type!.isNotEmpty) ...[
                                       const SizedBox(
@@ -185,6 +188,15 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                         'Pot Type: ${orderProduct.pot_type!}',
                                       ),
                                     ],
+
+                                    // if (orderProduct.giftDetails != null) ...[
+                                    //   const SizedBox(
+                                    //       height: 8), // Additional spacing
+                                    // const Divider(),
+                                    // const Text('Gift Details:',
+                                    //     style: TextStyle(
+                                    //         fontWeight: FontWeight.bold,
+                                    //         color: Colors.black)),
                                     if (orderProduct.giftDetails != null) ...[
                                       const SizedBox(
                                           height: 8), // Additional spacing
@@ -193,35 +205,26 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                           style: TextStyle(
                                               fontWeight: FontWeight.bold,
                                               color: Colors.black)),
-                                      if (orderProduct.giftDetails != null) ...[
-                                        const SizedBox(
-                                            height: 8), // Additional spacing
-                                        const Divider(),
-                                        const Text('Gift Details:',
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.black)),
-                                        const SizedBox(
-                                            height: 8), // Additional spacing
-                                        Text(
-                                          'Recipient Name: ${orderProduct.giftDetails!.recipientName}',
-                                        ),
-                                        const SizedBox(
-                                            height: 8), // Additional spacing
-                                        Text(
-                                          'Recipient Phone: ${orderProduct.giftDetails!.recipientPhone}',
-                                        ),
-                                        const SizedBox(
-                                            height: 8), // Additional spacing
-                                        Text(
-                                          'Recipient Address: ${orderProduct.giftDetails!.recipientAddress}',
-                                        ),
-                                        const SizedBox(
-                                            height: 8), // Additional spacing
-                                        Text(
-                                          'Note: ${orderProduct.giftDetails!.note}',
-                                        ),
-                                      ],
+                                      const SizedBox(
+                                          height: 8), // Additional spacing
+                                      Text(
+                                        'Recipient Name: ${orderProduct.giftDetails!.recipientName}',
+                                      ),
+                                      const SizedBox(
+                                          height: 8), // Additional spacing
+                                      Text(
+                                        'Recipient Phone: ${orderProduct.giftDetails!.recipientPhone}',
+                                      ),
+                                      const SizedBox(
+                                          height: 8), // Additional spacing
+                                      Text(
+                                        'Recipient Address: ${orderProduct.giftDetails!.recipientAddress}',
+                                      ),
+                                      const SizedBox(
+                                          height: 8), // Additional spacing
+                                      Text(
+                                        'Note: ${orderProduct.giftDetails!.note}',
+                                      ),
                                     ],
                                   ],
                                 ),
@@ -235,17 +238,20 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       if (order.status == 'pending')
                         Align(
                           alignment: Alignment.centerRight,
-                          child: ElevatedButton(
-                            onPressed: () =>
-                                showCancelConfirmationDialog(order.id),
-                            style: ButtonStyle(
-                                backgroundColor:
-                                    MaterialStateProperty.all<Color>(
-                              const Color.fromARGB(221, 44, 163, 58),
-                            )),
-                            child: const Text(
-                              'Cancel Order',
-                              style: TextStyle(color: Colors.white),
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: ElevatedButton(
+                              onPressed: () =>
+                                  showCancelConfirmationDialog(order.id),
+                              style: ButtonStyle(
+                                  backgroundColor:
+                                      WidgetStateProperty.all<Color>(
+                                const Color.fromARGB(221, 44, 163, 58),
+                              )),
+                              child: const Text(
+                                'Cancel Order',
+                                style: TextStyle(color: Colors.white),
+                              ),
                             ),
                           ),
                         ),

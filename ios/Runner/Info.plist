@@ -4,6 +4,9 @@
 <dict>
 <key>NSPhotoLibraryUsageDescription</key>
     <string>We need access to your photo library to upload images for sharing within the app.</string>
+	<key>NSCameraUsageDescription</key>
+<string>We need access to your camera for capturing photos and videos for profile pictures and other features.</string>
+
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>

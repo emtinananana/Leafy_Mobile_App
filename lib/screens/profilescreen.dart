@@ -139,6 +139,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
       var request = http.MultipartRequest('POST', Uri.parse(apiUrl));
       request.headers['Authorization'] = 'Bearer $token';
+
       request.files
           .add(await http.MultipartFile.fromPath('avatar', _image!.path));
 
@@ -162,7 +163,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Failed to update avatar'),
-            backgroundColor: Colors.green,
+            backgroundColor: Colors.red,
           ),
         );
       }
@@ -258,20 +259,85 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           actions: <Widget>[
             ElevatedButton(
-              onPressed: () {
-                authProvider.updateUserProfile(
-                  nameController.text,
-                  emailController.text,
-                  phoneController.text,
-                  addressController.text,
+              onPressed: () async {
+                if (nameController.text.isEmpty ||
+                    emailController.text.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Name and Email cannot be empty'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                  return;
+                }
+                if (addressController.text.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Address cannot be empty'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                  return;
+                }
+
+                final token = await SharedPreferences.getInstance()
+                    .then((prefs) => prefs.getString('token') ?? '');
+
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (BuildContext context) {
+                    return const Center(child: CircularProgressIndicator());
+                  },
                 );
-                Navigator.of(context).pop();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Profile updated'),
-                    backgroundColor: Colors.green,
-                  ),
-                );
+
+                try {
+                  final response = await http.put(
+                    Uri.parse(
+                        'http://127.0.0.1:8000/api/customer/profile/edit'),
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Authorization': 'Bearer $token',
+                    },
+                    body: json.encode({
+                      'name': nameController.text,
+                      'email': emailController.text,
+                      'phone': phoneController.text,
+                      'address': addressController.text,
+                    }),
+                  );
+
+                  if (response.statusCode == 201 ||
+                      response.statusCode == 204) {
+                    authProvider.updateUserProfile(
+                      nameController.text,
+                      emailController.text,
+                      phoneController.text,
+                      addressController.text,
+                    );
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Profile updated successfully'),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Failed to update profile'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error: $e')),
+                  );
+                } finally {
+                  Navigator.of(context).pop(); // Dismiss the loading dialog
+                  Navigator.of(context).pop(); // Close the edit profile dialog
+                }
               },
               child: const Text('Save'),
               style: ElevatedButton.styleFrom(

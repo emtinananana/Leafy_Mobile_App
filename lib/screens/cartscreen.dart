@@ -64,132 +64,196 @@ class _CartScreenState extends State<CartScreen> {
     // Check if there are any gifts in the cart
     bool hasGifts =
         cartProvider.cartItems.any((cartItem) => cartItem['is_gift']);
+    bool isFormValid = false; // Track form validity
 
     if (hasGifts) {
+      final _formKey = GlobalKey<FormState>();
+
       await showDialog(
         context: context,
         builder: (BuildContext context) {
-          return AlertDialog(
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-            title: Text(
-              'Add Gift Details',
-              style: GoogleFonts.oswald(
-                fontSize: 24,
-                color: const Color.fromARGB(221, 44, 163, 58),
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            content: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  for (int index = 0;
-                      index < cartProvider.cartItems.length;
-                      index++)
-                    if (cartProvider.cartItems[index]
-                        ['is_gift']) // Only show for gift items
-                      ListTile(
-                        title: Text(
-                          cartProvider.cartItems[index]['product']['name'],
+          return StatefulBuilder(
+            builder: (context, setState) {
+              return AlertDialog(
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                title: Text(
+                  'Add Gift Details',
+                  style: GoogleFonts.oswald(
+                    fontSize: 24,
+                    color: const Color.fromARGB(221, 44, 163, 58),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                content: SingleChildScrollView(
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        for (int index = 0;
+                            index < cartProvider.cartItems.length;
+                            index++)
+                          if (cartProvider.cartItems[index]
+                              ['is_gift']) // Only show for gift items
+                            ListTile(
+                              title: Text(
+                                cartProvider.cartItems[index]['product']
+                                    ['name'],
+                                style: GoogleFonts.oswald(
+                                  fontSize: 20,
+                                ),
+                              ),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const SizedBox(height: 8),
+                                  TextFormField(
+                                    initialValue: _giftDetails[index]
+                                            ['recipient_name'] ??
+                                        '',
+                                    decoration: const InputDecoration(
+                                      labelText: 'Recipient Name',
+                                      labelStyle:
+                                          TextStyle(color: Colors.green),
+                                    ),
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return 'Please enter recipient name';
+                                      }
+                                      return null;
+                                    },
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _giftDetails[index]['recipient_name'] =
+                                            value;
+                                        isFormValid =
+                                            _formKey.currentState?.validate() ??
+                                                false;
+                                      });
+                                    },
+                                  ),
+                                  const SizedBox(height: 8),
+                                  TextFormField(
+                                    initialValue: _giftDetails[index]
+                                            ['recipient_phone'] ??
+                                        '',
+                                    decoration: const InputDecoration(
+                                      labelText: 'Recipient Phone',
+                                      labelStyle:
+                                          TextStyle(color: Colors.green),
+                                    ),
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return 'Please enter recipient phone';
+                                      }
+                                      return null;
+                                    },
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _giftDetails[index]['recipient_phone'] =
+                                            value;
+                                        isFormValid =
+                                            _formKey.currentState?.validate() ??
+                                                false;
+                                      });
+                                    },
+                                  ),
+                                  const SizedBox(height: 8),
+                                  TextFormField(
+                                    initialValue: _giftDetails[index]
+                                            ['recipient_address'] ??
+                                        '',
+                                    decoration: const InputDecoration(
+                                      labelText: 'Recipient Address',
+                                      labelStyle:
+                                          TextStyle(color: Colors.green),
+                                    ),
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return 'Please enter recipient address';
+                                      }
+                                      return null;
+                                    },
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _giftDetails[index]
+                                            ['recipient_address'] = value;
+                                        isFormValid =
+                                            _formKey.currentState?.validate() ??
+                                                false;
+                                      });
+                                    },
+                                  ),
+                                  const SizedBox(height: 8),
+                                  TextFormField(
+                                    initialValue:
+                                        _giftDetails[index]['note'] ?? '',
+                                    decoration: const InputDecoration(
+                                      labelText: 'Note',
+                                      labelStyle:
+                                          TextStyle(color: Colors.green),
+                                    ),
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return 'Please enter a note';
+                                      }
+                                      return null;
+                                    },
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _giftDetails[index]['note'] = value;
+                                        isFormValid =
+                                            _formKey.currentState?.validate() ??
+                                                false;
+                                      });
+                                    },
+                                  ),
+                                  const SizedBox(height: 16),
+                                ],
+                              ),
+                            ),
+                        Text(
+                          'Total: \$${cartProvider.totalPrice.toStringAsFixed(2)}',
                           style: GoogleFonts.oswald(
-                            fontSize: 20,
+                            fontSize: 14,
+                            color: const Color.fromARGB(221, 0, 0, 0),
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const SizedBox(height: 8),
-                            TextFormField(
-                              initialValue:
-                                  _giftDetails[index]['recipient_name'] ?? '',
-                              decoration: const InputDecoration(
-                                labelText: 'Recipient Name',
-                                labelStyle: TextStyle(color: Colors.green),
-                              ),
-                              onChanged: (value) {
-                                setState(() {
-                                  _giftDetails[index]['recipient_name'] = value;
-                                });
-                              },
-                            ),
-                            const SizedBox(height: 8),
-                            TextFormField(
-                              initialValue:
-                                  _giftDetails[index]['recipient_phone'] ?? '',
-                              decoration: const InputDecoration(
-                                labelText: 'Recipient Phone',
-                                labelStyle: TextStyle(color: Colors.green),
-                              ),
-                              onChanged: (value) {
-                                setState(() {
-                                  _giftDetails[index]['recipient_phone'] =
-                                      value;
-                                });
-                              },
-                            ),
-                            const SizedBox(height: 8),
-                            TextFormField(
-                              initialValue: _giftDetails[index]
-                                      ['recipient_address'] ??
-                                  '',
-                              decoration: const InputDecoration(
-                                labelText: 'Recipient Address',
-                                labelStyle: TextStyle(color: Colors.green),
-                              ),
-                              onChanged: (value) {
-                                setState(() {
-                                  _giftDetails[index]['recipient_address'] =
-                                      value;
-                                });
-                              },
-                            ),
-                            const SizedBox(height: 8),
-                            TextFormField(
-                              initialValue: _giftDetails[index]['note'] ?? '',
-                              decoration: const InputDecoration(
-                                labelText: 'Note',
-                                labelStyle: TextStyle(color: Colors.green),
-                              ),
-                              onChanged: (value) {
-                                setState(() {
-                                  _giftDetails[index]['note'] = value;
-                                });
-                              },
-                            ),
-                            const SizedBox(height: 16),
-                          ],
-                        ),
-                      ),
-                  Text(
-                    'Total: \$${cartProvider.totalPrice.toStringAsFixed(2)}',
-                    style: GoogleFonts.oswald(
-                      fontSize: 14,
-                      color: const Color.fromARGB(221, 0, 0, 0),
-                      fontWeight: FontWeight.bold,
+                      ],
                     ),
                   ),
+                ),
+                actions: <Widget>[
+                  TextButton(
+                    child: const Text('Cancel',
+                        style:
+                            TextStyle(color: Color.fromARGB(221, 44, 163, 58))),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                  TextButton(
+                    child: Text(
+                      'Confirm Order',
+                      style: TextStyle(
+                        color: isFormValid
+                            ? Color.fromARGB(221, 44, 163, 58)
+                            : Colors.grey,
+                      ),
+                    ),
+                    onPressed: isFormValid
+                        ? () async {
+                            Navigator.of(context).pop();
+                            await _checkout(context);
+                          }
+                        : null,
+                  ),
                 ],
-              ),
-            ),
-            actions: <Widget>[
-              TextButton(
-                child: const Text('Cancel',
-                    style: TextStyle(color: Color.fromARGB(221, 44, 163, 58))),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-              TextButton(
-                child: const Text('Confirm Order',
-                    style: TextStyle(color: Color.fromARGB(221, 44, 163, 58))),
-                onPressed: () async {
-                  Navigator.of(context).pop();
-                  await _checkout(context);
-                },
-              ),
-            ],
+              );
+            },
           );
         },
       );
@@ -221,8 +285,10 @@ class _CartScreenState extends State<CartScreen> {
             ),
             actions: <Widget>[
               TextButton(
-                child: const Text('Confirm Order',
-                    style: TextStyle(color: Color.fromARGB(221, 44, 163, 58))),
+                child: Text(
+                  'Confirm Order',
+                  style: TextStyle(color: Color.fromARGB(221, 44, 163, 58)),
+                ),
                 onPressed: () async {
                   Navigator.of(context).pop();
                   await _checkout(context);
@@ -391,7 +457,7 @@ class _CartScreenState extends State<CartScreen> {
               ),
             ),
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(25.0),
             child: ElevatedButton(
               onPressed: cartProvider.cartItems.isEmpty
                   ? null

@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:leafy_mobile_app/main.dart';
 import 'package:leafy_mobile_app/providers/authprovider.dart';
 import 'package:leafy_mobile_app/screens/registerscreen.dart';
@@ -156,7 +157,6 @@ class _LoginScreenState extends State<LoginScreen> {
                               "password": passwordController.text
                             }, context).then((loggedIn) {
                               if (loggedIn) {
-                                // Show success dialog
                                 showDialog(
                                   context: context,
                                   barrierDismissible:
@@ -164,8 +164,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   builder: (BuildContext context) {
                                     Future.delayed(const Duration(seconds: 2),
                                         () {
-                                      Navigator.of(context)
-                                          .pop(); // Close dialog after 2 seconds
+                                      Navigator.of(context).pop();
                                       Navigator.pushAndRemoveUntil(
                                         context,
                                         CupertinoPageRoute(
@@ -176,21 +175,21 @@ class _LoginScreenState extends State<LoginScreen> {
                                       );
                                     });
                                     return AlertDialog(
-                                      backgroundColor: Colors
-                                          .white, // Background color of the dialog
+                                      backgroundColor: Colors.white,
                                       shape: RoundedRectangleBorder(
                                           borderRadius:
                                               BorderRadius.circular(16.0)),
-                                      title: const Icon(
-                                        Icons.save,
-                                        color: Colors.green,
+                                      title: Image.asset(
+                                        'assets/plant.png',
+                                        height: 20,
                                       ),
-                                      content: const Text(
+                                      content: Text(
                                         "Login successful",
-                                        style: TextStyle(
-                                          color: Colors
-                                              .black, // Content text color
-                                          fontSize: 18.0, // Content font size
+                                        textAlign: TextAlign.center,
+                                        style: GoogleFonts.oswald(
+                                          fontSize: 20,
+                                          color: Colors.black,
+                                          // Content font size
                                         ),
                                       ),
                                     );

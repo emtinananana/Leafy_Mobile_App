@@ -56,7 +56,8 @@ class AuthProvider with ChangeNotifier {
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text("Login Failed"),
+        content: Text("Login Failed, Check Your Credintials"),
+        backgroundColor: Color.fromARGB(255, 110, 108, 108),
       ));
       isLoggedIn = false;
     }
@@ -73,6 +74,9 @@ class AuthProvider with ChangeNotifier {
       Map<String, dynamic> registerBody, BuildContext context) async {
     final response = await http.post(
       Uri.parse("http://127.0.0.1:8000/api/customer/register"),
+      headers: <String, String>{
+        'Accept': 'application/json; charset=UTF-8',
+      },
       body: registerBody,
     );
 
@@ -84,22 +88,17 @@ class AuthProvider with ChangeNotifier {
     if (response.statusCode == 200 || response.statusCode == 201) {
       try {
         final responseBody = json.decode(response.body);
-
+        _user = User(
+          id: responseBody['customer']['id'],
+          name: responseBody['customer']['name'],
+          email: responseBody['customer']['email'],
+          phone: responseBody['customer']['phone'],
+          address: responseBody['customer']['address'],
+          createdAt: DateTime.parse(responseBody['customer']['created_at']),
+          updatedAt: DateTime.parse(responseBody['customer']['updated_at']),
+        );
         SharedPreferences prefs = await SharedPreferences.getInstance();
         prefs.setString("token", responseBody['token']);
-
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            Future.delayed(const Duration(seconds: 1), () {
-              Navigator.of(context).pop(true);
-            });
-            return const AlertDialog(
-              title: Text("Success"),
-              content: Text("Registration successful"),
-            );
-          },
-        );
 
         return true;
       } catch (e) {
@@ -112,10 +111,50 @@ class AuthProvider with ChangeNotifier {
     } else {
       final errorMessage =
           response.body.isNotEmpty ? response.body : "Unknown error occurred";
-      debugPrint("Error message: $errorMessage");
+
+      // Parse the JSON response
+      Map<String, dynamic> errorResponse = {};
+      try {
+        errorResponse = jsonDecode(errorMessage);
+      } catch (e) {
+        // Handle JSON parsing error
+        debugPrint("Error parsing JSON: $e");
+      }
+
+      // Initialize the display message with a default value
+      String displayMessage = "Registration failed";
+
+      // Extract error messages if they exist
+      if (errorResponse.containsKey('errors')) {
+        final errors = errorResponse['errors'] as Map<String, dynamic>;
+        List<String> errorMessages = [];
+
+        // Iterate through the errors and accumulate the messages
+        errors.forEach((key, value) {
+          if (value is List) {
+            errorMessages.addAll(value.cast<String>());
+          }
+        });
+
+        // Join the error messages into a single string
+        if (errorMessages.isNotEmpty) {
+          displayMessage = errorMessages.join(' ');
+        } else {
+          // If specific error messages are not found, include the general message
+          displayMessage = errorResponse['message'] ?? displayMessage;
+        }
+      } else {
+        // If 'errors' key is not present, use the general message
+        displayMessage = errorResponse['message'] ?? displayMessage;
+      }
+
+      debugPrint("Error message: $displayMessage");
+
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text("Registration failed: $errorMessage"),
+        content: Text(displayMessage),
+        backgroundColor: Color.fromARGB(255, 110, 108, 108),
       ));
+
       return false;
     }
   }

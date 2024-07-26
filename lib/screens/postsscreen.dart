@@ -148,7 +148,7 @@ class _PostsScreenState extends State<PostsScreen> {
                 decoration: InputDecoration(
                   labelText: 'Search Posts',
                   labelStyle:
-                      TextStyle(color: Color.fromARGB(221, 44, 163, 58)),
+                      const TextStyle(color: Color.fromARGB(221, 44, 163, 58)),
                   hintText: 'Search...',
                   prefixIcon: const Icon(
                     Icons.search,
@@ -249,7 +249,7 @@ class _PostsScreenState extends State<PostsScreen> {
                                               },
                                             ),
                                             Text('${post.likeCount} Likes'),
-                                            SizedBox(width: 3),
+                                            const SizedBox(width: 3),
                                             IconButton(
                                               icon: const Icon(Icons.chat,
                                                   color: Color.fromARGB(
@@ -354,47 +354,92 @@ class _PostsScreenState extends State<PostsScreen> {
 // }
 
   void _showCommentDialog(PostModel post) {
+    String errorMessage = ''; // Variable to store error message
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Add Comment',
-              style: GoogleFonts.oswald(
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Text(
+                'Add Comment',
+                style: GoogleFonts.oswald(
                   fontSize: 20,
                   color: const Color.fromARGB(221, 0, 0, 0),
-                  fontWeight: FontWeight.bold)),
-          content: TextField(
-            controller: _commentController,
-            decoration: const InputDecoration(hintText: 'Enter your comment'),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Cancel',
-                  style: TextStyle(color: Color.fromARGB(221, 44, 163, 58))),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            TextButton(
-              child: const Text('Comment',
-                  style: TextStyle(color: Color.fromARGB(221, 44, 163, 58))),
-              onPressed: () async {
-                try {
-                  await Provider.of<PostProvider>(context, listen: false)
-                      .addComment(post.id, _commentController.text);
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  TextField(
+                    controller: _commentController,
+                    decoration: const InputDecoration(
+                      hintText: 'Enter your comment',
+                    ),
+                    onChanged: (value) {
+                      if (value.isNotEmpty) {
+                        setState(() {
+                          errorMessage =
+                              ''; // Clear the error message when user types
+                        });
+                      }
+                    },
+                  ),
+                  if (errorMessage.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: Text(
+                        errorMessage,
+                        style: const TextStyle(color: Colors.red),
+                      ),
+                    ),
+                ],
+              ),
+              actions: <Widget>[
+                TextButton(
+                  child: const Text(
+                    'Cancel',
+                    style: TextStyle(color: Color.fromARGB(221, 44, 163, 58)),
+                  ),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+                TextButton(
+                  child: const Text(
+                    'Comment',
+                    style: TextStyle(color: Color.fromARGB(221, 44, 163, 58)),
+                  ),
+                  onPressed: () async {
+                    if (_commentController.text.isEmpty) {
+                      setState(() {
+                        errorMessage = 'Please enter a comment';
+                      });
+                    } else {
+                      try {
+                        await Provider.of<PostProvider>(context, listen: false)
+                            .addComment(post.id, _commentController.text);
 
-                  // Fetch updated posts list after adding comment
-                  await _fetchPosts();
+                        // Fetch updated posts list after adding comment
+                        await _fetchPosts();
 
-                  Navigator.of(context).pop(); // Close dialog
-                  _commentController.clear(); // Clear comment text field
-                } catch (error) {
-                  // Handle error
-                  print('Error adding comment: $error');
-                }
-              },
-            ),
-          ],
+                        Navigator.of(context).pop(); // Close dialog
+                        _commentController.clear(); // Clear comment text field
+                      } catch (error) {
+                        setState(() {
+                          errorMessage = 'Error adding comment: $error';
+                        });
+                        print('Error adding comment: $error');
+                      }
+                    }
+                  },
+                ),
+              ],
+            );
+          },
         );
       },
     );
@@ -402,8 +447,10 @@ class _PostsScreenState extends State<PostsScreen> {
 
   void _showCreatePostDialog(BuildContext context) {
     XFile? _pickedImage; // Use XFile to store picked image
+    String errorMessage = '';
 
-    Future<void> _pickImage(ImageSource source) async {
+    Future<void> _pickImage(
+        ImageSource source, Function(void Function()) setState) async {
       final pickedImageFile = await ImagePicker().pickImage(
         source: source,
         imageQuality: 50, // Adjust image quality as needed
@@ -411,6 +458,9 @@ class _PostsScreenState extends State<PostsScreen> {
 
       setState(() {
         _pickedImage = pickedImageFile; // Assign XFile to _pickedImage
+        if (_postContentController.text.isNotEmpty) {
+          errorMessage = ''; // Clear the error message if content is not empty
+        }
       });
     }
 
@@ -420,7 +470,7 @@ class _PostsScreenState extends State<PostsScreen> {
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              title: Text(
+              title: const Text(
                 'Create Post',
                 style: TextStyle(
                   fontSize: 24,
@@ -435,13 +485,52 @@ class _PostsScreenState extends State<PostsScreen> {
                   TextField(
                     controller: _postContentController,
                     maxLines: 5,
+                    onChanged: (value) {
+                      if (value.isNotEmpty && _pickedImage != null) {
+                        setState(() {
+                          errorMessage = ''; // Clear the error message
+                        });
+                      }
+                    },
                     decoration: InputDecoration(
                       hintText: 'Enter post content',
                       filled: true,
                       fillColor: Colors.grey.shade200,
                     ),
                   ),
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: Color.fromARGB(221, 44, 163, 58)),
+                        onPressed: () =>
+                            _pickImage(ImageSource.camera, setState),
+                        icon: const Icon(Icons.camera_alt),
+                        label: const Text('Camera'),
+                      ),
+                      ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: Color.fromARGB(221, 44, 163, 58)),
+                        onPressed: () =>
+                            _pickImage(ImageSource.gallery, setState),
+                        icon: const Icon(Icons.image),
+                        label: const Text('Gallery'),
+                      ),
+                    ],
+                  ),
+                  SizedBox(
+                    height: 6,
+                  ),
+                  if (errorMessage.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: Text(
+                        errorMessage,
+                        style: const TextStyle(color: Colors.red),
+                      ),
+                    ),
                   if (_pickedImage != null)
                     Image.file(
                       File(_pickedImage!.path), // Display picked image
@@ -449,26 +538,11 @@ class _PostsScreenState extends State<PostsScreen> {
                       width: 100,
                       fit: BoxFit.cover,
                     ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      ElevatedButton.icon(
-                        onPressed: () => _pickImage(ImageSource.camera),
-                        icon: Icon(Icons.camera_alt),
-                        label: Text('Camera'),
-                      ),
-                      ElevatedButton.icon(
-                        onPressed: () => _pickImage(ImageSource.gallery),
-                        icon: Icon(Icons.image),
-                        label: Text('Gallery'),
-                      ),
-                    ],
-                  ),
                 ],
               ),
               actions: <Widget>[
                 TextButton(
-                  child: Text(
+                  child: const Text(
                     'Cancel',
                     style: TextStyle(color: Colors.green),
                   ),
@@ -477,33 +551,49 @@ class _PostsScreenState extends State<PostsScreen> {
                   },
                 ),
                 TextButton(
-                  child: Text(
+                  child: const Text(
                     'Post',
                     style: TextStyle(color: Colors.green),
                   ),
                   onPressed: () async {
-                    try {
-                      if (_pickedImage != null) {
-                        // Perform post creation with image upload
-                        String postImagePath = _pickedImage!.path;
-                        await Provider.of<PostProvider>(context, listen: false)
-                            .createPost(
-                          _postContentController.text,
-                          postImagePath,
-                        );
+                    if (_postContentController.text.isEmpty &&
+                        _pickedImage == null) {
+                      setState(() {
+                        errorMessage = 'Please enter content and pick an image';
+                      });
+                    } else if (_postContentController.text.isEmpty) {
+                      setState(() {
+                        errorMessage = 'Please enter content';
+                      });
+                    } else if (_pickedImage == null) {
+                      setState(() {
+                        errorMessage = 'Please pick an image';
+                      });
+                    } else {
+                      try {
+                        if (_pickedImage != null) {
+                          // Perform post creation with image upload
+                          String postImagePath = _pickedImage!.path;
+                          await Provider.of<PostProvider>(context,
+                                  listen: false)
+                              .createPost(
+                            _postContentController.text,
+                            postImagePath,
+                          );
 
-                        await _fetchPosts();
+                          await _fetchPosts();
 
-                        Navigator.of(context).pop();
-                        _postContentController.clear();
+                          Navigator.of(context).pop();
+                          _postContentController.clear();
+                          setState(() {
+                            _pickedImage = null;
+                          });
+                        }
+                      } catch (error) {
                         setState(() {
-                          _pickedImage = null;
+                          errorMessage = 'Error creating post: $error';
                         });
-                      } else {
-                        print('No image selected.');
                       }
-                    } catch (error) {
-                      print('Error creating post: $error');
                     }
                   },
                 ),
@@ -595,7 +685,7 @@ class _PostWidgetState extends State<PostWidget> {
             },
             child: Text(
               showFullContent ? 'Read Less' : 'Read More',
-              style: TextStyle(
+              style: const TextStyle(
                 color: Colors.green,
               ),
             ),

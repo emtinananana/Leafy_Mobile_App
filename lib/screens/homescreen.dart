@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:leafy_mobile_app/main.dart';
 import 'package:leafy_mobile_app/screens/cartscreen.dart';
+import 'package:leafy_mobile_app/screens/contactus_screen.dart';
 import 'package:leafy_mobile_app/screens/favscreen.dart';
 import 'package:leafy_mobile_app/screens/historyscreen.dart';
 import 'package:leafy_mobile_app/screens/postsscreen.dart';
@@ -291,8 +292,16 @@ class _HomeScreenState extends State<HomeScreen> {
                       },
                     ),
                     const Divider(),
-                    const ListTile(
+                    ListTile(
                       title: Text("Contact Us"),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ContactUsScreen(),
+                          ),
+                        );
+                      },
                     ),
                     const Divider(),
                     GestureDetector(

@@ -118,8 +118,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                         'Total: ${order.total.toStringAsFixed(2)}',
                         style: const TextStyle(
                           fontSize: 16,
-                          color:
-                              Color.fromARGB(221, 44, 163, 58), // Green color
+                          color: Color.fromARGB(221, 44, 163, 58),
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -128,7 +127,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       ListTile(
                         title: Text(
                           'Order Date: ${order.orderDate}',
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
                           ),
@@ -137,12 +136,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
                             ? Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  SizedBox(
+                                  const SizedBox(
                                     height: 10,
                                   ),
                                   Text(
                                     'Delivery Date: ${order.deliveryDate}',
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                       color: Colors.black,
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -151,7 +150,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                               )
                             : null,
                       ),
-                      const SizedBox(height: 8), // Additional spacing
+                      const SizedBox(height: 8),
                       ListView.builder(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
@@ -164,16 +163,15 @@ class _HistoryScreenState extends State<HistoryScreen> {
                               ListTile(
                                 title: Text(
                                   orderProduct.name,
-                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold),
                                 ),
                                 subtitle: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const SizedBox(
-                                        height: 8), // Additional spacing
+                                    const SizedBox(height: 8),
                                     Text('Quantity: ${orderProduct.quantity}'),
-                                    const SizedBox(
-                                        height: 8), // Additional spacing
+                                    const SizedBox(height: 8),
                                     Text(
                                       'Price: \$${orderProduct.price.toStringAsFixed(2)}',
                                     ),
@@ -182,11 +180,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                     ],
                                     if (orderProduct.pot_type != null &&
                                         orderProduct.pot_type!.isNotEmpty) ...[
-                                      const SizedBox(
-                                          height: 8), // Additional spacing
+                                      const SizedBox(height: 8),
                                       Text(
                                         'Pot Type: ${orderProduct.pot_type!}',
                                       ),
+                                      const SizedBox(height: 8),
                                     ],
 
                                     // if (orderProduct.giftDetails != null) ...[
@@ -198,30 +196,25 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                     //         fontWeight: FontWeight.bold,
                                     //         color: Colors.black)),
                                     if (orderProduct.giftDetails != null) ...[
-                                      const SizedBox(
-                                          height: 8), // Additional spacing
+                                      const SizedBox(height: 8),
                                       const Divider(),
                                       const Text('Gift Details:',
                                           style: TextStyle(
                                               fontWeight: FontWeight.bold,
                                               color: Colors.black)),
-                                      const SizedBox(
-                                          height: 8), // Additional spacing
+                                      const SizedBox(height: 8),
                                       Text(
                                         'Recipient Name: ${orderProduct.giftDetails!.recipientName}',
                                       ),
-                                      const SizedBox(
-                                          height: 8), // Additional spacing
+                                      const SizedBox(height: 8),
                                       Text(
                                         'Recipient Phone: ${orderProduct.giftDetails!.recipientPhone}',
                                       ),
-                                      const SizedBox(
-                                          height: 8), // Additional spacing
+                                      const SizedBox(height: 8),
                                       Text(
                                         'Recipient Address: ${orderProduct.giftDetails!.recipientAddress}',
                                       ),
-                                      const SizedBox(
-                                          height: 8), // Additional spacing
+                                      const SizedBox(height: 8),
                                       Text(
                                         'Note: ${orderProduct.giftDetails!.note}',
                                       ),
@@ -277,7 +270,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
           actions: <Widget>[
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
+                Navigator.of(context).pop();
               },
               child: const Text(
                 'No',
@@ -286,8 +279,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
             ),
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
-                cancelOrder(orderId); // Proceed with canceling the order
+                Navigator.of(context).pop();
+                cancelOrder(orderId);
               },
               child: const Text('Yes',
                   style: TextStyle(

@@ -74,6 +74,9 @@ flutter:
     - assets/animation.json
     - assets/gift.svg
     - assets/plant.png
+    - assets/facebook.svg
+    - assets/instagram.svg
+    - assets/twitter.svg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

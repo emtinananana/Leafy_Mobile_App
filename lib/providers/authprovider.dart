@@ -117,14 +117,12 @@ class AuthProvider with ChangeNotifier {
       try {
         errorResponse = jsonDecode(errorMessage);
       } catch (e) {
-        // Handle JSON parsing error
         debugPrint("Error parsing JSON: $e");
       }
 
       // Initialize the display message with a default value
       String displayMessage = "Registration failed";
 
-      // Extract error messages if they exist
       if (errorResponse.containsKey('errors')) {
         final errors = errorResponse['errors'] as Map<String, dynamic>;
         List<String> errorMessages = [];

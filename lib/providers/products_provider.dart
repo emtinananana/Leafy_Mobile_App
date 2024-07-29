@@ -148,7 +148,7 @@ class ProductsProvider with ChangeNotifier {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString("token");
 
-    if (token == null) return; // Exit if no token
+    if (token == null) return;
 
     final response = await http.get(
       Uri.parse("http://127.0.0.1:8000/api/customer/products/favorites"),
@@ -179,7 +179,7 @@ class ProductsProvider with ChangeNotifier {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString("token");
 
-    if (token == null) return; // Exit if no token
+    if (token == null) return;
 
     final url = Uri.parse(
         "http://127.0.0.1:8000/api/customer/products/$productId/unlike");
@@ -204,7 +204,7 @@ class ProductsProvider with ChangeNotifier {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString("token");
 
-    if (token == null) return; // Exit if no token
+    if (token == null) return;
 
     bool isLiked = _likedProductIds.contains(productId);
     final url = Uri.parse(
@@ -255,7 +255,7 @@ class ProductsProvider with ChangeNotifier {
   }
 
   Future<void> searchProducts(String query) async {
-    setLoading(true); // Set loading state to true
+    setLoading(true);
     try {
       final response = await http.post(
         Uri.parse("http://127.0.0.1:8000/api/catalog/search"),
@@ -270,13 +270,11 @@ class ProductsProvider with ChangeNotifier {
         _products = decodedData
             .map((productJson) => ProductModel.fromJson(productJson))
             .toList();
-        setFailed(false); // Reset failed state
+        setFailed(false);
       } else {
-        // Handle unsuccessful response
         setFailed(true);
       }
     } catch (error) {
-      // Handle network or decoding errors
       setFailed(true);
     } finally {
       setLoading(false); // Set loading state to false after operation completes

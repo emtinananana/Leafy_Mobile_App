@@ -17,7 +17,6 @@ class CartProvider with ChangeNotifier {
     String? token = prefs.getString("token");
 
     if (token == null) {
-      // Handle the case where the token is not available
       return;
     }
 
@@ -65,7 +64,6 @@ class CartProvider with ChangeNotifier {
     String? token = prefs.getString("token");
 
     if (token == null) {
-      // Handle the case where the token is not available
       return;
     }
 
@@ -82,9 +80,7 @@ class CartProvider with ChangeNotifier {
       _cartItems.removeWhere((item) => item['id'] == cartItemId);
       _updateTotalPrice();
       notifyListeners();
-    } else {
-      // Handle error
-    }
+    } else {}
   }
 
   Future<void> checkout({List<Map<String, dynamic>>? giftDetails}) async {
@@ -92,7 +88,6 @@ class CartProvider with ChangeNotifier {
     String? token = prefs.getString("token");
 
     if (token == null) {
-      // Handle the case where the token is not available
       return;
     }
 
@@ -116,13 +111,11 @@ class CartProvider with ChangeNotifier {
     );
 
     if (response.statusCode == 200 || response.statusCode == 201) {
-      // Checkout successful, clear cart items
       _cartItems.clear();
       _totalPrice = 0.0;
-      _giftDetails.clear(); // Clear gift details after checkout
+      _giftDetails.clear();
       notifyListeners();
     } else {
-      // Handle error
       print('Failed to checkout. Status code: ${response.statusCode}');
     }
   }

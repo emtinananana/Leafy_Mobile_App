@@ -135,7 +135,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
 
             const SizedBox(height: 18.0),
             Text(
-              '\$${widget.product.price}',
+              '\$${widget.product.price.toStringAsFixed(2)}',
               style: GoogleFonts.roboto(
                 fontSize: 22,
                 color: Colors.green,
@@ -176,10 +176,21 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 18.0),
-            Text(
-              widget.product.description,
-              style: const TextStyle(fontSize: 18, color: Colors.black54),
+            RichText(
+              textAlign: TextAlign.start,
+              text: TextSpan(
+                text: widget.product.description,
+                style: const TextStyle(
+                  fontSize: 18,
+                  color: Colors.black54,
+                  height: 1.5,
+                ),
+              ),
             ),
+            // Text(
+            //   widget.product.description,
+            //   style: const TextStyle(fontSize: 18, color: Colors.black54),
+            // ),
             if (widget.product.plantInstructions != null) ...[
               const SizedBox(height: 18.0),
               const Text(
@@ -410,7 +421,6 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
     String? potType = _selectedPotType;
 
     if (token == null) {
-      // Handle case where user is not logged in
       return;
     }
 
@@ -469,8 +479,6 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
               ],
             );
           });
-    } else {
-      // Handle error
-    }
+    } else {}
   }
 }

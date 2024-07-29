@@ -37,15 +37,30 @@ class FavScreen extends StatelessWidget {
                 itemBuilder: (ctx, index) {
                   final product = likedProducts[index];
 
-                  return SingleChildScrollView(
+                  return Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: ListTile(
-                      leading: Image.network(
-                        product.firstImage,
-                        fit: BoxFit.cover,
+                      leading: Container(
+                        width: 50,
+                        height: 50,
+                        child: Image.network(
+                          product.firstImage,
+                          fit: BoxFit.cover,
+                        ),
                       ),
-                      title: Text(product.name),
-                      subtitle: Text('Price: \$${product.price}'),
+                      title: Text(
+                        product.name,
+                        style: const TextStyle(
+                          fontSize: 19,
+                        ),
+                      ),
+                      subtitle: Padding(
+                        padding: const EdgeInsets.only(top: 6.0),
+                        child: Text(
+                          'Price: \$${product.price}',
+                          style: const TextStyle(fontSize: 15),
+                        ),
+                      ),
                       trailing: IconButton(
                         icon: const Icon(
                           Icons.favorite,

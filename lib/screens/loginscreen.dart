@@ -33,7 +33,7 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
           // Transparent container overlay with login form
           Container(
-            color: Colors.black.withOpacity(0.14), // Adjust opacity as needed
+            color: Colors.black.withOpacity(0.14),
             child: Padding(
               padding: const EdgeInsets.all(24.0),
               child: Form(
@@ -48,8 +48,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     children: [
                       TextFormField(
                         controller: emailController,
-                        style:
-                            const TextStyle(color: Colors.white), // Text color
+                        style: const TextStyle(color: Colors.white),
                         decoration: InputDecoration(
                           hintText: "Email",
                           hintStyle: const TextStyle(color: Colors.white),
@@ -189,7 +188,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                         style: GoogleFonts.oswald(
                                           fontSize: 20,
                                           color: Colors.black,
-                                          // Content font size
                                         ),
                                       ),
                                     );

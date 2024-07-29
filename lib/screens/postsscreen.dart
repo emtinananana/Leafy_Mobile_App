@@ -57,18 +57,13 @@ class _PostsScreenState extends State<PostsScreen> {
     try {
       final postsProvider = Provider.of<PostProvider>(context, listen: false);
       postsProvider.toggleLikePost(post.id).then((_) async {
-        // Optionally, you may need to update the local state if not using a Consumer
-        setState(() {
-          // Update the local posts list or relevant UI state as needed
-        });
+        setState(() {});
         await _fetchPosts();
       }).catchError((error) {
         print('Error toggling like: $error');
-        // Handle error gracefully
       });
     } catch (e) {
       print('Error toggling like: $e');
-      // Handle error gracefully
     }
   }
 
@@ -78,7 +73,7 @@ class _PostsScreenState extends State<PostsScreen> {
           await Provider.of<PostProvider>(context, listen: false).fetchPosts();
 
       setState(() {
-        _posts = posts; // Handle null case to prevent errors
+        _posts = posts;
       });
     } catch (error) {
       if (error.toString().contains('404')) {
@@ -95,11 +90,9 @@ class _PostsScreenState extends State<PostsScreen> {
     try {
       List<PostModel> filteredPosts;
       if (query.isEmpty) {
-        // Fetch all posts if search query is empty
         filteredPosts = await Provider.of<PostProvider>(context, listen: false)
             .fetchPosts();
       } else {
-        // Fetch filtered posts based on search query
         filteredPosts = await Provider.of<PostProvider>(context, listen: false)
             .searchPosts(query);
       }
@@ -108,12 +101,10 @@ class _PostsScreenState extends State<PostsScreen> {
       });
     } catch (error) {
       if (error.toString().contains('404')) {
-        // Handle 404 error by setting _posts to an empty list
         setState(() {
           _posts = [];
         });
       } else {
-        // Handle other errors
         print('Error filtering posts: $error');
       }
     }
@@ -182,8 +173,7 @@ class _PostsScreenState extends State<PostsScreen> {
                         bool isLiked = Provider.of<PostProvider>(context)
                             .likedPostIds
                             .contains(post.id);
-                        bool showFullContent =
-                            false; // Track full content display
+                        bool showFullContent = false;
 
                         return Column(
                           children: [
@@ -307,8 +297,12 @@ class _PostsScreenState extends State<PostsScreen> {
                                               post.comments[commentIndex];
                                           return ListTile(
                                             title: Text(comment.content),
-                                            subtitle: Text(
-                                                'By: ${comment.customer.name}'),
+                                            subtitle: Padding(
+                                              padding: const EdgeInsets.only(
+                                                  top: 8.0),
+                                              child: Text(
+                                                  'By: ${comment.customer.name}'),
+                                            ),
                                           );
                                         },
                                       ),
@@ -382,8 +376,7 @@ class _PostsScreenState extends State<PostsScreen> {
                     onChanged: (value) {
                       if (value.isNotEmpty) {
                         setState(() {
-                          errorMessage =
-                              ''; // Clear the error message when user types
+                          errorMessage = '';
                         });
                       }
                     },
@@ -453,13 +446,13 @@ class _PostsScreenState extends State<PostsScreen> {
         ImageSource source, Function(void Function()) setState) async {
       final pickedImageFile = await ImagePicker().pickImage(
         source: source,
-        imageQuality: 50, // Adjust image quality as needed
+        imageQuality: 50,
       );
 
       setState(() {
         _pickedImage = pickedImageFile; // Assign XFile to _pickedImage
         if (_postContentController.text.isNotEmpty) {
-          errorMessage = ''; // Clear the error message if content is not empty
+          errorMessage = '';
         }
       });
     }
@@ -572,7 +565,6 @@ class _PostsScreenState extends State<PostsScreen> {
                     } else {
                       try {
                         if (_pickedImage != null) {
-                          // Perform post creation with image upload
                           String postImagePath = _pickedImage!.path;
                           await Provider.of<PostProvider>(context,
                                   listen: false)
@@ -669,7 +661,10 @@ class _PostWidgetState extends State<PostWidget> {
       children: [
         Text(
           showFullContent ? widget.content : _truncateString(widget.content),
-          style: const TextStyle(fontSize: 16),
+          style: const TextStyle(
+            fontSize: 16,
+            height: 1.5,
+          ),
           maxLines:
               showFullContent ? null : 2, // Limit to 2 lines when not expanded
           overflow: showFullContent
@@ -695,14 +690,12 @@ class _PostWidgetState extends State<PostWidget> {
   }
 
   bool _isContentShort() {
-    return widget.content.length <=
-        100; // Adjust the character count (100) as per your requirement
+    return widget.content.length <= 100;
   }
 
   String _truncateString(String content) {
     final words = content.split(' ');
     if (words.length <= 20) {
-      // Adjust the number of words (20) to fit your needs
       return content;
     }
     return words.take(20).join(' ') + '...';

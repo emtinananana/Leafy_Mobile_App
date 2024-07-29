@@ -36,8 +36,8 @@ class ProductCard extends StatelessWidget {
         }
       },
       child: Container(
-        height: 400, // Adjust as needed for your layout
-        width: 900, // Adjust as needed for your layout
+        height: 400,
+        width: 900,
         child: Card(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
@@ -57,7 +57,7 @@ class ProductCard extends StatelessWidget {
                     ),
                     child: Image.network(
                       product!.firstImage,
-                      fit: BoxFit.cover,
+                      fit: BoxFit.contain,
                       errorBuilder: (context, error, stackTrace) {
                         return Container(
                           color: Colors.grey[300],
